@@ -1,23 +1,39 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 120">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">
   <defs>
     <linearGradient id="primary" x1="0%" y1="0%" x2="0%" y2="100%">
       <stop offset="0%" stop-color="#2E8B57"/>
       <stop offset="100%" stop-color="#00D4AA"/>
     </linearGradient>
+    <linearGradient id="textGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#2E8B57"/>
+      <stop offset="100%" stop-color="#00D4AA"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
   </defs>
-  <!-- Cobra Icon (left side, scaled down) -->
-  <g transform="translate(10, 10) scale(0.8)">
-    <path d="M50 6 C22 6 6 22 6 48 C6 70 18 78 28 78 L50 66 L72 78 C82 78 94 70 94 48 C94 22 78 6 50 6Z" fill="url(#primary)"/>
-    <circle cx="40" cy="52" r="5" fill="#FFD43B"/>
-    <circle cx="60" cy="52" r="5" fill="#FFD43B"/>
-    <ellipse cx="40" cy="52" rx="1.2" ry="3.5" fill="#1A1A2E"/>
-    <ellipse cx="60" cy="52" rx="1.2" ry="3.5" fill="#1A1A2E"/>
-    <path d="M50 67 L50 84 L46 90 M50 84 L54 90" stroke="#FF6B6B" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-    <path d="M30 38 L36 44 L42 38 M58 38 L64 44 L70 38 M44 28 L50 34 L56 28" fill="none" stroke="#1A6B4A" stroke-width="1" opacity="0.4"/>
+
+  <!-- Cobra Icon centered -->
+  <g transform="translate(200, 95)">
+    <path d="M0 -85 C-32 -85 -60 -58 -60 -28 C-60 -2 -48 8 -38 8 L0 -8 L38 8 C48 8 60 -2 60 -28 C60 -58 32 -85 0 -85Z" fill="url(#primary)"/>
+    <circle cx="-14" cy="-26" r="6" fill="#FFD43B"/>
+    <circle cx="14" cy="-26" r="6" fill="#FFD43B"/>
+    <ellipse cx="-14" cy="-26" rx="1.5" ry="4" fill="#1A1A2E"/>
+    <ellipse cx="14" cy="-26" rx="1.5" ry="4" fill="#1A1A2E"/>
+    <path d="M0 5 L0 24 L-6 32 M0 24 L6 32" stroke="#FF6B6B" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M-24 -44 L-18 -38 L-12 -44 M12 -44 L18 -38 L24 -44 M-8 -58 L0 -52 L8 -58" fill="none" stroke="#1A6B4A" stroke-width="1.2" opacity="0.35"/>
   </g>
+
   <!-- Text: Cobra -->
-  <g transform="translate(110, 35)">
-    <text x="0" y="50" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="60" font-weight="900" fill="#2E8B57" letter-spacing="2">Cobra</text>
-    <text x="0" y="78" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="#6B7280" font-weight="500" letter-spacing="3">A MODERN SYSTEMS LANGUAGE</text>
-  </g>
+  <text x="200" y="195" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="72" font-weight="900" fill="url(#textGrad)" text-anchor="middle" letter-spacing="4">Cobra</text>
+
+  <!-- Tagline -->
+  <text x="200" y="235" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="#6B7280" font-weight="600" text-anchor="middle" letter-spacing="4">A MODERN SYSTEMS LANGUAGE</text>
+
+  <!-- Decorative line -->
+  <line x1="120" y1="253" x2="280" y2="253" stroke="#2E8B57" stroke-width="1.5" opacity="0.2"/>
 </svg>

@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1500 500">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0F0F23"/>
+      <stop offset="100%" stop-color="#1A1A3E"/>
+    </linearGradient>
+    <linearGradient id="primary" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#2E8B57"/>
+      <stop offset="100%" stop-color="#00D4AA"/>
+    </linearGradient>
+    <linearGradient id="textGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#2E8B57"/>
+      <stop offset="100%" stop-color="#00D4AA"/>
+    </linearGradient>
+  </defs>
+  <rect width="1500" height="500" fill="url(#bg)"/>
+
+  <!-- Cobra Icon (left side) -->
+  <g transform="translate(220, 250) scale(2.2)">
+    <path d="M0 -85 C-32 -85 -60 -58 -60 -28 C-60 -2 -48 8 -38 8 L0 -8 L38 8 C48 8 60 -2 60 -28 C60 -58 32 -85 0 -85Z" fill="url(#primary)"/>
+    <circle cx="-14" cy="-26" r="6" fill="#FFD43B"/>
+    <circle cx="14" cy="-26" r="6" fill="#FFD43B"/>
+    <ellipse cx="-14" cy="-26" rx="1.5" ry="4" fill="#1A1A2E"/>
+    <ellipse cx="14" cy="-26" rx="1.5" ry="4" fill="#1A1A2E"/>
+    <path d="M0 5 L0 24 L-6 32 M0 24 L6 32" stroke="#FF6B6B" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <!-- Text: Cobra -->
+  <text x="620" y="240" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="120" font-weight="900" fill="url(#textGrad)" letter-spacing="6">Cobra</text>
+
+  <!-- Tagline -->
+  <text x="620" y="310" font-family="system-ui, -apple-system, sans-serif" font-size="28" fill="#6B7280" font-weight="600" letter-spacing="6">THE PYTHON-INSPIRED LANGUAGE WITH C-LEVEL PERFORMANCE</text>
+</svg>

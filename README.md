@@ -1,4 +1,6 @@
-<img src="branding/cobra-logo.svg" alt="Cobra Logo" width="400"/>
+<p align="center">
+  <img src="branding/cobra-logo.svg" alt="Cobra Logo" width="400"/>
+</p>
 
 # Cobra Programming Language
 
