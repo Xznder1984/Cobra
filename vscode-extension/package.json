@@ -4,6 +4,7 @@
   "description": "Cobra programming language support",
   "version": "0.1.0",
   "publisher": "cobra-lang",
+  "icon": "../branding/cobra-icon-512.png",
   "engines": {
     "vscode": "^1.80.0"
   },
