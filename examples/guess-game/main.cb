@@ -1,0 +1,31 @@
+// Number Guessing Game in Cobra
+
+fn main() {
+    println("Number Guessing Game")
+    println("===================")
+    println("I'm thinking of a number between 1 and 100.")
+    println("Can you guess it?")
+    
+    let secret = 42
+    let guess = -1
+    let attempts = 0
+    
+    while guess != secret {
+        println()
+        println("Enter your guess: ")
+        // guess = read_int()  -- would read from stdin
+        // For now, we'll simulate with hardcoded guesses
+        guess = 42
+        
+        attempts = attempts + 1
+        
+        if guess < secret {
+            println("Too low!")
+        } elif guess > secret {
+            println("Too high!")
+        } else {
+            println("Correct!")
+            println("You got it in " + attempts + " attempts!")
+        }
+    }
+}

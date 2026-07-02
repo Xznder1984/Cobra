@@ -1,0 +1,43 @@
+// Fibonacci sequence in Cobra
+// Demonstrates functions, recursion, and loops
+
+fn fibonacci_recursive(n: int) -> int {
+    if n <= 1 {
+        return n
+    }
+    return fibonacci_recursive(n - 1) + fibonacci_recursive(n - 2)
+}
+
+fn fibonacci_iterative(n: int) -> int {
+    if n <= 1 {
+        return n
+    }
+    
+    let a = 0
+    let b = 1
+    let result = 0
+    
+    for i in 2..=n {
+        result = a + b
+        a = b
+        b = result
+    }
+    
+    return result
+}
+
+fn main() {
+    println("Fibonacci Sequence")
+    println("=================")
+    
+    println("Recursive:")
+    for i in 0..10 {
+        println("fib(" + i + ") = " + fibonacci_recursive(i))
+    }
+    
+    println()
+    println("Iterative:")
+    for i in 0..10 {
+        println("fib(" + i + ") = " + fibonacci_iterative(i))
+    }
+}

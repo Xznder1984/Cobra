@@ -1,0 +1,20 @@
+// Structs and Methods in Cobra
+
+struct Person {
+    name: str
+    age: int
+    email: str
+}
+
+fn main() {
+    let person = Person{
+        name: "Alice",
+        age: 30,
+        email: "alice@example.com"
+    }
+    
+    println("Person Details:")
+    println("  Name:  " + person.name)
+    println("  Age:   " + person.age)
+    println("  Email: " + person.email)
+}

@@ -1,0 +1,1435 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cobra Programming Language</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    /* ========== RESET & BASE ========== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      line-height: 1.6;
+      transition: background 0.4s ease, color 0.4s ease;
+      overflow-x: hidden;
+    }
+    img, svg { display: block; max-width: 100%; }
+    a { text-decoration: none; color: inherit; }
+    ul { list-style: none; }
+
+    /* ========== CSS CUSTOM PROPERTIES ========== */
+    :root {
+      --primary: #2E8B57;
+      --primary-dark: #1E6B3F;
+      --primary-light: #3DAF6E;
+      --secondary: #FFD43B;
+      --accent: #00D4AA;
+      --accent-dark: #00A888;
+      --gradient-1: linear-gradient(135deg, #2E8B57, #00D4AA);
+      --gradient-2: linear-gradient(135deg, #1E6B3F, #2E8B57, #00D4AA);
+      --gradient-3: linear-gradient(135deg, #2E8B57, #FFD43B);
+      --gradient-hero: linear-gradient(135deg, #0a1628, #0d2137, #0a1628);
+
+      --bg-primary: #ffffff;
+      --bg-secondary: #f8f9fa;
+      --bg-tertiary: #f0f2f5;
+      --text-primary: #1a1a2e;
+      --text-secondary: #4a4a6a;
+      --text-muted: #8888aa;
+      --card-bg: rgba(255, 255, 255, 0.7);
+      --card-border: rgba(255, 255, 255, 0.3);
+      --card-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+      --nav-bg: rgba(255, 255, 255, 0.85);
+      --nav-border: rgba(0, 0, 0, 0.06);
+      --code-bg: #1e1e2e;
+      --code-text: #cdd6f4;
+      --footer-bg: #0a1628;
+      --footer-text: #8899bb;
+      --glow: rgba(46, 139, 87, 0.15);
+      --toggle-bg: #e0e0e0;
+    }
+
+    [data-theme="dark"] {
+      --bg-primary: #0d1117;
+      --bg-secondary: #161b22;
+      --bg-tertiary: #1c2333;
+      --text-primary: #e6edf3;
+      --text-secondary: #b0b8c4;
+      --text-muted: #6e7681;
+      --card-bg: rgba(22, 27, 34, 0.7);
+      --card-border: rgba(255, 255, 255, 0.06);
+      --card-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      --nav-bg: rgba(13, 17, 23, 0.85);
+      --nav-border: rgba(255, 255, 255, 0.06);
+      --code-bg: #0d1117;
+      --code-text: #cdd6f4;
+      --footer-bg: #010409;
+      --footer-text: #6e7681;
+      --glow: rgba(0, 212, 170, 0.08);
+      --toggle-bg: #2d3748;
+    }
+
+    /* ========== UTILITY ========== */
+    .container {
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+    .section {
+      padding: 100px 0;
+      position: relative;
+    }
+    .section-title {
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 800;
+      text-align: center;
+      margin-bottom: 16px;
+      background: var(--gradient-2);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .section-subtitle {
+      font-size: 1.1rem;
+      color: var(--text-secondary);
+      text-align: center;
+      max-width: 600px;
+      margin: 0 auto 60px;
+      line-height: 1.8;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 32px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      border: none;
+      font-family: inherit;
+      position: relative;
+      overflow: hidden;
+    }
+    .btn-primary {
+      background: var(--gradient-1);
+      color: #fff;
+      box-shadow: 0 4px 20px rgba(46, 139, 87, 0.3);
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(46, 139, 87, 0.4);
+    }
+    .btn-secondary {
+      background: transparent;
+      color: var(--text-primary);
+      border: 2px solid var(--primary);
+    }
+    .btn-secondary:hover {
+      background: var(--primary);
+      color: #fff;
+      transform: translateY(-2px);
+    }
+    .btn-ghost {
+      background: var(--card-bg);
+      backdrop-filter: blur(10px);
+      color: var(--text-primary);
+      border: 1px solid var(--card-border);
+    }
+    .btn-ghost:hover {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+      transform: translateY(-2px);
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .reveal.active {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .reveal-delay-1 { transition-delay: 0.1s; }
+    .reveal-delay-2 { transition-delay: 0.2s; }
+    .reveal-delay-3 { transition-delay: 0.3s; }
+    .reveal-delay-4 { transition-delay: 0.4s; }
+
+    /* ========== NAVBAR ========== */
+    .navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 1000;
+      padding: 16px 0;
+      transition: all 0.4s ease;
+      background: transparent;
+    }
+    .navbar.scrolled {
+      background: var(--nav-bg);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      border-bottom: 1px solid var(--nav-border);
+      padding: 10px 0;
+    }
+    .nav-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--text-primary);
+    }
+    .nav-logo svg {
+      width: 36px;
+      height: 36px;
+    }
+    .nav-logo span {
+      background: var(--gradient-2);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+    }
+    .nav-links a {
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      transition: color 0.3s;
+      position: relative;
+    }
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: var(--gradient-1);
+      transition: width 0.3s;
+      border-radius: 2px;
+    }
+    .nav-links a:hover { color: var(--primary); }
+    .nav-links a:hover::after { width: 100%; }
+
+    .theme-toggle {
+      background: var(--toggle-bg);
+      border: none;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s;
+      font-size: 1.2rem;
+      color: var(--text-primary);
+    }
+    .theme-toggle:hover {
+      transform: scale(1.1);
+      box-shadow: 0 0 20px var(--glow);
+    }
+
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      cursor: pointer;
+      background: none;
+      border: none;
+      padding: 4px;
+    }
+    .hamburger span {
+      width: 24px;
+      height: 2px;
+      background: var(--text-primary);
+      border-radius: 2px;
+      transition: all 0.3s;
+    }
+    .hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+    .hamburger.active span:nth-child(2) { opacity: 0; }
+    .hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
+
+    /* ========== HERO ========== */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+      background: var(--gradient-hero);
+      padding-top: 80px;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 50%, rgba(46, 139, 87, 0.12) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 80% 30%, rgba(0, 212, 170, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse 50% 40% at 50% 80%, rgba(255, 212, 59, 0.04) 0%, transparent 50%);
+      pointer-events: none;
+    }
+    .hero-glow {
+      position: absolute;
+      width: 600px;
+      height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(46, 139, 87, 0.1), transparent 70%);
+      top: -200px;
+      right: -200px;
+      animation: glowPulse 6s ease-in-out infinite;
+      pointer-events: none;
+    }
+    .hero-glow-2 {
+      position: absolute;
+      width: 400px;
+      height: 400px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(0, 212, 170, 0.08), transparent 70%);
+      bottom: -100px;
+      left: -100px;
+      animation: glowPulse 8s ease-in-out infinite 2s;
+      pointer-events: none;
+    }
+    @keyframes glowPulse {
+      0%, 100% { transform: scale(1); opacity: 0.6; }
+      50% { transform: scale(1.2); opacity: 1; }
+    }
+
+    .hero-content {
+      text-align: center;
+      position: relative;
+      z-index: 2;
+      max-width: 900px;
+      padding: 0 24px;
+    }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 20px;
+      background: rgba(46, 139, 87, 0.15);
+      border: 1px solid rgba(46, 139, 87, 0.3);
+      border-radius: 50px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--accent);
+      margin-bottom: 32px;
+      backdrop-filter: blur(10px);
+    }
+    .hero-badge .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: blink 1.5s ease-in-out infinite;
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    .hero-logo {
+      margin: 0 auto 32px;
+      width: 120px;
+      height: 120px;
+      animation: float 6s ease-in-out infinite;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-15px); }
+    }
+
+    .hero h1 {
+      font-size: clamp(2.8rem, 8vw, 5rem);
+      font-weight: 900;
+      line-height: 1.1;
+      margin-bottom: 20px;
+      color: #fff;
+    }
+    .hero h1 .highlight {
+      background: linear-gradient(135deg, #2E8B57, #00D4AA, #FFD43B);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero p {
+      font-size: clamp(1.05rem, 2vw, 1.3rem);
+      color: rgba(255, 255, 255, 0.7);
+      max-width: 640px;
+      margin: 0 auto 40px;
+      line-height: 1.8;
+    }
+    .hero-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      justify-content: center;
+      margin-bottom: 60px;
+    }
+    .hero-buttons .btn-primary {
+      background: linear-gradient(135deg, #2E8B57, #00D4AA);
+      color: #fff;
+      padding: 16px 36px;
+      font-size: 1.05rem;
+    }
+    .hero-buttons .btn-secondary {
+      border-color: rgba(255, 255, 255, 0.3);
+      color: #fff;
+    }
+    .hero-buttons .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.5);
+    }
+
+    .hero-code-preview {
+      max-width: 680px;
+      margin: 0 auto;
+      background: rgba(13, 17, 23, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      overflow: hidden;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+      text-align: left;
+    }
+    .hero-code-preview .mac-dots {
+      display: flex;
+      gap: 8px;
+      padding: 14px 20px;
+      background: rgba(255, 255, 255, 0.04);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .hero-code-preview .mac-dots span {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+    .hero-code-preview .mac-dots span:nth-child(1) { background: #ff5f56; }
+    .hero-code-preview .mac-dots span:nth-child(2) { background: #ffbd2e; }
+    .hero-code-preview .mac-dots span:nth-child(3) { background: #27c93f; }
+    .hero-code-preview pre {
+      padding: 24px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      line-height: 1.7;
+      color: var(--code-text);
+      overflow-x: auto;
+      margin: 0;
+    }
+    .hero-code-preview code {
+      font-family: inherit;
+    }
+    .typing-cursor {
+      display: inline-block;
+      width: 2px;
+      height: 1.1em;
+      background: var(--accent);
+      margin-left: 2px;
+      animation: cursorBlink 0.8s step-end infinite;
+      vertical-align: text-bottom;
+    }
+    @keyframes cursorBlink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+
+    /* Syntax colors for hero */
+    .hljs-keyword { color: #c792ea; }
+    .hljs-string { color: #c3e88d; }
+    .hljs-number { color: #f78c6c; }
+    .hljs-function { color: #82aaff; }
+    .hljs-comment { color: #546e7a; font-style: italic; }
+    .hljs-type { color: #ffcb6b; }
+    .hljs-params { color: #eeffff; }
+    .hljs-built_in { color: #89ddff; }
+    .hljs-title { color: #82aaff; }
+
+    /* ========== FEATURES ========== */
+    .features {
+      background: var(--bg-primary);
+    }
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+    }
+    .feature-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 36px 32px;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: var(--card-shadow);
+      position: relative;
+      overflow: hidden;
+    }
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--gradient-1);
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+    .feature-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 16px 48px var(--glow);
+    }
+    .feature-card:hover::before { opacity: 1; }
+    .feature-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+      background: var(--gradient-1);
+      color: #fff;
+    }
+    .feature-card h3 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: var(--text-primary);
+    }
+    .feature-card p {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      line-height: 1.7;
+    }
+
+    /* ========== CODE EXAMPLES ========== */
+    .code-examples {
+      background: var(--bg-secondary);
+    }
+    .code-tabs {
+      display: flex;
+      gap: 4px;
+      background: var(--bg-tertiary);
+      padding: 4px;
+      border-radius: 14px;
+      max-width: fit-content;
+      margin: 0 auto 40px;
+      overflow-x: auto;
+    }
+    .code-tab {
+      padding: 10px 24px;
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      border-radius: 10px;
+      transition: all 0.3s;
+      white-space: nowrap;
+    }
+    .code-tab:hover { color: var(--text-primary); }
+    .code-tab.active {
+      background: var(--bg-primary);
+      color: var(--primary);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    .code-panel {
+      display: none;
+      max-width: 780px;
+      margin: 0 auto;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+      border: 1px solid var(--card-border);
+    }
+    .code-panel.active { display: block; }
+    .code-panel .mac-dots {
+      display: flex;
+      gap: 8px;
+      padding: 14px 20px;
+      background: var(--code-bg);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .code-panel .mac-dots span {
+      width: 12px; height: 12px; border-radius: 50%;
+    }
+    .code-panel .mac-dots span:nth-child(1) { background: #ff5f56; }
+    .code-panel .mac-dots span:nth-child(2) { background: #ffbd2e; }
+    .code-panel .mac-dots span:nth-child(3) { background: #27c93f; }
+    .code-panel pre {
+      padding: 28px;
+      background: var(--code-bg);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      line-height: 1.8;
+      overflow-x: auto;
+      color: var(--code-text);
+      margin: 0;
+    }
+    .code-panel code { font-family: inherit; }
+
+    /* ========== INSTALLATION ========== */
+    .install {
+      background: var(--bg-primary);
+    }
+    .install-card {
+      max-width: 700px;
+      margin: 0 auto;
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 48px;
+      box-shadow: var(--card-shadow);
+      text-align: center;
+    }
+    .install-card h3 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: var(--text-primary);
+    }
+    .install-card p {
+      color: var(--text-secondary);
+      margin-bottom: 28px;
+    }
+    .install-code {
+      display: flex;
+      align-items: center;
+      background: var(--code-bg);
+      border-radius: 12px;
+      padding: 16px 20px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.9rem;
+      color: var(--code-text);
+      text-align: left;
+      position: relative;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .install-code code {
+      flex: 1;
+      overflow-x: auto;
+    }
+    .install-code .copy-btn {
+      background: rgba(255,255,255,0.08);
+      border: none;
+      color: var(--code-text);
+      padding: 8px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-family: inherit;
+      transition: all 0.3s;
+      flex-shrink: 0;
+      margin-left: 12px;
+    }
+    .install-code .copy-btn:hover {
+      background: var(--primary);
+      color: #fff;
+    }
+    .install-os {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      margin-top: 20px;
+    }
+    .install-os span {
+      padding: 6px 16px;
+      border-radius: 8px;
+      background: var(--bg-tertiary);
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+
+    /* ========== COMMUNITY ========== */
+    .community {
+      background: var(--bg-secondary);
+    }
+    .community-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 24px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .community-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 32px;
+      text-align: center;
+      transition: all 0.4s;
+      box-shadow: var(--card-shadow);
+    }
+    .community-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px var(--glow);
+    }
+    .community-card .icon {
+      font-size: 2.5rem;
+      margin-bottom: 16px;
+    }
+    .community-card h3 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: var(--text-primary);
+    }
+    .community-card p {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      margin-bottom: 20px;
+    }
+
+    /* ========== FOOTER ========== */
+    .footer {
+      background: var(--footer-bg);
+      padding: 60px 0 30px;
+      color: var(--footer-text);
+    }
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 40px;
+      margin-bottom: 40px;
+    }
+    .footer-brand h3 {
+      font-size: 1.4rem;
+      font-weight: 800;
+      margin-bottom: 12px;
+      color: #fff;
+    }
+    .footer-brand h3 span {
+      background: linear-gradient(135deg, #2E8B57, #00D4AA);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .footer-brand p {
+      font-size: 0.9rem;
+      line-height: 1.7;
+      max-width: 320px;
+    }
+    .footer-col h4 {
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+    .footer-col a {
+      display: block;
+      font-size: 0.9rem;
+      color: var(--footer-text);
+      margin-bottom: 10px;
+      transition: color 0.3s;
+    }
+    .footer-col a:hover { color: var(--accent); }
+    .footer-bottom {
+      border-top: 1px solid rgba(255,255,255,0.06);
+      padding-top: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      font-size: 0.85rem;
+    }
+    .footer-bottom a { color: var(--accent); }
+
+    /* ========== RESPONSIVE ========== */
+    @media (max-width: 1024px) {
+      .footer-grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 768px) {
+      .nav-links {
+        position: fixed;
+        top: 0;
+        right: -100%;
+        width: 280px;
+        height: 100vh;
+        background: var(--bg-primary);
+        flex-direction: column;
+        justify-content: center;
+        gap: 28px;
+        padding: 40px;
+        transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: -10px 0 40px rgba(0,0,0,0.15);
+        z-index: 999;
+      }
+      .nav-links.open { right: 0; }
+      .nav-links a { font-size: 1.1rem; }
+      .nav-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 998;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.4s;
+      }
+      .nav-overlay.open { opacity: 1; pointer-events: auto; }
+      .hamburger { display: flex; z-index: 1000; }
+      .nav-links .theme-toggle { display: flex; }
+      .nav-theme-toggle { display: none; }
+
+      .features-grid { grid-template-columns: 1fr; }
+      .community-grid { grid-template-columns: 1fr 1fr; }
+      .install-card { padding: 32px 20px; }
+      .footer-grid { grid-template-columns: 1fr; text-align: center; }
+      .footer-brand p { margin: 0 auto; }
+      .footer-bottom { flex-direction: column; text-align: center; }
+      .hero-logo { width: 80px; height: 80px; }
+      .hero-code-preview pre { font-size: 0.75rem; padding: 16px; }
+    }
+    @media (max-width: 480px) {
+      .section { padding: 60px 0; }
+      .community-grid { grid-template-columns: 1fr; }
+      .hero-buttons .btn { width: 100%; justify-content: center; }
+      .code-tabs { width: 100%; }
+      .code-tab { flex: 1; text-align: center; padding: 10px 12px; font-size: 0.8rem; }
+    }
+
+    /* ========== SCROLL INDICATOR ========== */
+    .scroll-indicator {
+      position: absolute;
+      bottom: 32px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      color: rgba(255,255,255,0.4);
+      font-size: 0.75rem;
+      animation: bounce 2s infinite;
+      z-index: 2;
+    }
+    .scroll-indicator .mouse {
+      width: 24px;
+      height: 38px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-radius: 12px;
+      position: relative;
+    }
+    .scroll-indicator .mouse::after {
+      content: '';
+      position: absolute;
+      top: 6px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 3px;
+      height: 10px;
+      background: rgba(255,255,255,0.5);
+      border-radius: 2px;
+      animation: scrollWheel 2s infinite;
+    }
+    @keyframes scrollWheel {
+      0% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      100% { opacity: 0; transform: translateX(-50%) translateY(12px); }
+    }
+    @keyframes bounce {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50% { transform: translateX(-50%) translateY(6px); }
+    }
+
+    /* ========== SNAKE DECORATION ========== */
+    .snake-decoration {
+      position: absolute;
+      pointer-events: none;
+      z-index: 1;
+    }
+    .snake-1 {
+      top: 20%;
+      left: -60px;
+      width: 200px;
+      height: 200px;
+      opacity: 0.08;
+    }
+    .snake-2 {
+      bottom: 15%;
+      right: -40px;
+      width: 160px;
+      height: 160px;
+      opacity: 0.06;
+      transform: rotate(45deg);
+    }
+
+    /* Star particles */
+    .stars {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .star {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      background: #fff;
+      border-radius: 50%;
+      animation: twinkle var(--duration) ease-in-out infinite;
+    }
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.2; }
+      50% { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ========== NAVBAR ========== -->
+  <nav class="navbar" id="navbar" role="navigation" aria-label="Main navigation">
+    <div class="nav-container">
+      <a href="#" class="nav-logo">
+        <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M18 2C9.716 2 3 8.716 3 17v2c0 8.284 6.716 15 15 15s15-6.716 15-15v-2c0-8.284-6.716-15-15-15z" fill="url(#logoGrad)"/>
+          <path d="M10 17c0 4.418 3.582 8 8 8s8-3.582 8-8" stroke="#fff" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+          <path d="M14 14l4-4 4 4" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          <defs>
+            <linearGradient id="logoGrad" x1="3" y1="2" x2="33" y2="32" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#2E8B57"/>
+              <stop offset="1" stop-color="#00D4AA"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <span>Cobra</span>
+      </a>
+
+      <div class="nav-overlay" id="navOverlay"></div>
+      <div class="nav-links" id="navLinks">
+        <a href="#features" onclick="closeMenu()">Features</a>
+        <a href="#code" onclick="closeMenu()">Code</a>
+        <a href="#install" onclick="closeMenu()">Install</a>
+        <a href="#community" onclick="closeMenu()">Community</a>
+        <button class="theme-toggle nav-theme-toggle" id="themeToggleDesktop" aria-label="Toggle theme">
+          <span id="themeIconDesktop">☀️</span>
+        </button>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <button class="theme-toggle" id="themeToggleMobile" aria-label="Toggle theme" style="display:none">
+          <span id="themeIconMobile">☀️</span>
+        </button>
+        <button class="hamburger" id="hamburger" aria-label="Menu" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ========== HERO ========== -->
+  <section class="hero" id="hero">
+    <div class="hero-glow"></div>
+    <div class="hero-glow-2"></div>
+
+    <!-- Stars -->
+    <div class="stars" id="stars"></div>
+
+    <div class="hero-content">
+      <div class="hero-badge">
+        <span class="dot"></span>
+        v1.0.0 — Now available
+      </div>
+
+      <div class="hero-logo">
+        <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M60 10C32.386 10 10 32.386 10 60v4c0 27.614 22.386 50 50 50s50-22.386 50-50v-4c0-27.614-22.386-50-50-50z" fill="url(#heroLogoGrad)"/>
+          <path d="M30 60c0 16.569 13.431 30 30 30s30-13.431 30-30" stroke="#fff" stroke-width="5" stroke-linecap="round" fill="none"/>
+          <path d="M45 50l15-15 15 15" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          <path d="M38 70c0 0 8 10 22 10s22-10 22-10" stroke="#fff" stroke-width="3" stroke-linecap="round" fill="none" opacity="0.5"/>
+          <defs>
+            <linearGradient id="heroLogoGrad" x1="10" y1="10" x2="110" y2="110" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#2E8B57"/>
+              <stop offset="1" stop-color="#00D4AA"/>
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+
+      <h1>
+        The <span class="highlight">Cobra</span><br>
+        Programming Language
+      </h1>
+      <p>The Python-inspired language with C-level performance. Write elegant, readable code that compiles down to blazing-fast machine code.</p>
+
+      <div class="hero-buttons">
+        <a href="#install" class="btn btn-primary">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29"/></svg>
+          Get Started
+        </a>
+        <a href="#install" class="btn btn-secondary">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download v1.0.0
+        </a>
+        <a href="#code" class="btn btn-ghost">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+          View Code
+        </a>
+      </div>
+
+      <div class="hero-code-preview">
+        <div class="mac-dots">
+          <span></span><span></span><span></span>
+        </div>
+        <pre><code id="typingText"></code><span class="typing-cursor"></span></pre>
+      </div>
+    </div>
+
+    <div class="scroll-indicator">
+      <div class="mouse"></div>
+      <span>Scroll</span>
+    </div>
+  </section>
+
+  <!-- ========== FEATURES ========== -->
+  <section class="section features" id="features">
+    <div class="container">
+      <h2 class="section-title reveal">Why Cobra?</h2>
+      <p class="section-subtitle reveal">Designed for modern software development — combining Python's elegance with Rust's performance and safety guarantees.</p>
+
+      <div class="features-grid">
+        <div class="feature-card reveal reveal-delay-1">
+          <div class="feature-icon">⚡</div>
+          <h3>Blazing Speed</h3>
+          <p>Compiles to native machine code via LLVM, delivering performance on par with C and Rust. No runtime overhead, no garbage collector pauses.</p>
+        </div>
+        <div class="feature-card reveal reveal-delay-2">
+          <div class="feature-icon">✨</div>
+          <h3>Pythonic Syntax</h3>
+          <p>Familiar, readable syntax inspired by Python. Indentation-based blocks, dynamic feel with static types — the best of both worlds.</p>
+        </div>
+        <div class="feature-card reveal reveal-delay-3">
+          <div class="feature-icon">🛡️</div>
+          <h3>Memory Safety</h3>
+          <p>An ownership-based type system eliminates entire classes of bugs — no null pointer dereferences, no use-after-free, no data races.</p>
+        </div>
+        <div class="feature-card reveal reveal-delay-1">
+          <div class="feature-icon">⚙️</div>
+          <h3>Zero-Cost Abstractions</h3>
+          <p>High-level constructs compile down to optimal machine code. You pay only for what you use — no hidden overhead from abstractions.</p>
+        </div>
+        <div class="feature-card reveal reveal-delay-2">
+          <div class="feature-icon">🔗</div>
+          <h3>Seamless Interop</h3>
+          <p>Call C libraries directly with zero boilerplate. First-class FFI support means you can use any C, C++, or Rust library in your Cobra projects.</p>
+        </div>
+        <div class="feature-card reveal reveal-delay-3">
+          <div class="feature-icon">🚀</div>
+          <h3>Built-in Concurrency</h3>
+          <p>Async/await out of the box with a lightweight task system. Write concurrent code that's as easy as Python's asyncio — but 100x faster.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== CODE EXAMPLES ========== -->
+  <section class="section code-examples" id="code">
+    <div class="container">
+      <h2 class="section-title reveal">See Cobra in Action</h2>
+      <p class="section-subtitle reveal">Clean, expressive syntax that reads like Python but performs like C.</p>
+
+      <div class="code-tabs reveal" role="tablist">
+        <button class="code-tab active" data-tab="hello" role="tab" aria-selected="true">Hello World</button>
+        <button class="code-tab" data-tab="fib" role="tab" aria-selected="false">Fibonacci</button>
+        <button class="code-tab" data-tab="struct" role="tab" aria-selected="false">Struct & Methods</button>
+        <button class="code-tab" data-tab="async" role="tab" aria-selected="false">Async</button>
+      </div>
+
+      <!-- Hello World -->
+      <div class="code-panel active" id="panel-hello" role="tabpanel">
+        <div class="mac-dots"><span></span><span></span><span></span></div>
+        <pre><code><span class="hljs-comment"># Hello, World! in Cobra</span>
+<span class="hljs-keyword">fn</span> <span class="hljs-title">main</span>():
+    <span class="hljs-built_in">print</span>(<span class="hljs-string">"Hello, World!"</span>)
+
+<span class="hljs-comment"># Functions are defined with 'fn'</span>
+<span class="hljs-comment"># Indentation-based blocks (like Python)</span>
+<span class="hljs-comment"># Strong static typing with inference</span></code></pre>
+      </div>
+
+      <!-- Fibonacci -->
+      <div class="code-panel" id="panel-fib" role="tabpanel">
+        <div class="mac-dots"><span></span><span></span><span></span></div>
+        <pre><code><span class="hljs-comment"># Fibonacci with pattern matching</span>
+<span class="hljs-keyword">fn</span> <span class="hljs-title">fib</span>(n: <span class="hljs-type">int</span>) -> <span class="hljs-type">int</span>:
+    <span class="hljs-keyword">match</span> n:
+        <span class="hljs-number">0</span> => <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>
+        <span class="hljs-number">1</span> => <span class="hljs-keyword">return</span> <span class="hljs-number">1</span>
+        _   => <span class="hljs-keyword">return</span> fib(n - <span class="hljs-number">1</span>) + fib(n - <span class="hljs-number">2</span>)
+
+<span class="hljs-keyword">fn</span> <span class="hljs-title">main</span>():
+    <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> <span class="hljs-number">0</span>..<span class="hljs-number">10</span>:
+        <span class="hljs-built_in">print</span>(<span class="hljs-string">"fib({}) = {}"</span>.format(i, fib(i)))</code></pre>
+      </div>
+
+      <!-- Struct -->
+      <div class="code-panel" id="panel-struct" role="tabpanel">
+        <div class="mac-dots"><span></span><span></span><span></span></div>
+        <pre><code><span class="hljs-comment">// Struct with methods in Cobra</span>
+<span class="hljs-keyword">struct</span> <span class="hljs-title">Vec3</span>:
+    x: <span class="hljs-type">f64</span>
+    y: <span class="hljs-type">f64</span>
+    z: <span class="hljs-type">f64</span>
+
+    <span class="hljs-comment">// Method on Vec3</span>
+    <span class="hljs-keyword">fn</span> <span class="hljs-title">magnitude</span>(self) -> <span class="hljs-type">f64</span>:
+        <span class="hljs-keyword">return</span> (self.x**<span class="hljs-number">2</span> + self.y**<span class="hljs-number">2</span> + self.z**<span class="hljs-number">2</span>).sqrt()
+
+    <span class="hljs-keyword">fn</span> <span class="hljs-title">normalize</span>(self) -> <span class="hljs-type">Vec3</span>:
+        mag := self.magnitude()
+        <span class="hljs-keyword">return</span> Vec3(self.x/mag, self.y/mag, self.z/mag)
+
+<span class="hljs-keyword">fn</span> <span class="hljs-title">main</span>():
+    v := Vec3(<span class="hljs-number">3.0</span>, <span class="hljs-number">4.0</span>, <span class="hljs-number">0.0</span>)
+    <span class="hljs-built_in">print</span>(v.magnitude())  <span class="hljs-comment">// 5.0</span></code></pre>
+      </div>
+
+      <!-- Async -->
+      <div class="code-panel" id="panel-async" role="tabpanel">
+        <div class="mac-dots"><span></span><span></span><span></span></div>
+        <pre><code><span class="hljs-comment"># Async HTTP server in Cobra</span>
+<span class="hljs-keyword">use</span> net.http
+
+<span class="hljs-keyword">async fn</span> <span class="hljs-title">handle_request</span>(req: Request) -> Response:
+    <span class="hljs-keyword">match</span> req.method, req.path:
+        <span class="hljs-string">"GET"</span>, <span class="hljs-string">"/"</span> =>
+            <span class="hljs-keyword">return</span> Response(<span class="hljs-number">200</span>, <span class="hljs-string">"Hello, Cobra!"</span>)
+        <span class="hljs-string">"GET"</span>, <span class="hljs-string">"/api"</span> =>
+            data := <span class="hljs-keyword">await</span> fetch_database()
+            <span class="hljs-keyword">return</span> Response.json(<span class="hljs-number">200</span>, data)
+        _ =>
+            <span class="hljs-keyword">return</span> Response(<span class="hljs-number">404</span>, <span class="hljs-string">"Not found"</span>)
+
+<span class="hljs-keyword">fn</span> <span class="hljs-title">main</span>():
+    server := http.Server(port: <span class="hljs-number">8080</span>)
+    server.handle(handle_request)
+    server.listen()</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== INSTALLATION ========== -->
+  <section class="section install" id="install">
+    <div class="container">
+      <h2 class="section-title reveal">Get Started in Seconds</h2>
+      <p class="section-subtitle reveal">Install Cobra on macOS, Linux, or Windows with a single command.</p>
+
+      <div class="install-card reveal">
+        <h3>⚡ One-line Install</h3>
+        <p>Copy and paste this into your terminal:</p>
+        <div class="install-code">
+          <code>curl -fsSL https://cobra-lang.org/install.sh | bash</code>
+          <button class="copy-btn" onclick="copyInstall()">Copy</button>
+        </div>
+        <div class="install-os">
+          <span>🍎 macOS</span>
+          <span>🐧 Linux</span>
+          <span>🪟 Windows (via WSL)</span>
+          <span>📦 Homebrew: <code style="color:var(--accent);background:transparent;padding:0">brew install cobra</code></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== COMMUNITY ========== -->
+  <section class="section community" id="community">
+    <div class="container">
+      <h2 class="section-title reveal">Join the Community</h2>
+      <p class="section-subtitle reveal">Cobra is built by developers, for developers. Come say hi!</p>
+
+      <div class="community-grid">
+        <a href="https://github.com" target="_blank" rel="noopener" class="community-card reveal reveal-delay-1">
+          <div class="icon">🐙</div>
+          <h3>GitHub</h3>
+          <p>Star the repo, browse the source, report issues, and contribute.</p>
+          <span style="color:var(--accent);font-weight:600">github.com/cobra-lang →</span>
+        </a>
+        <a href="https://discord.com" target="_blank" rel="noopener" class="community-card reveal reveal-delay-2">
+          <div class="icon">💬</div>
+          <h3>Discord</h3>
+          <p>Chat with the team and community. Get help, share ideas, and hang out.</p>
+          <span style="color:var(--accent);font-weight:600">discord.gg/cobra →</span>
+        </a>
+        <a href="https://twitter.com" target="_blank" rel="noopener" class="community-card reveal reveal-delay-3">
+          <div class="icon">🐦</div>
+          <h3>X / Twitter</h3>
+          <p>Follow for release announcements, tips, and community highlights.</p>
+          <span style="color:var(--accent);font-weight:600">@cobra_lang →</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== FOOTER ========== -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <h3><span>Cobra</span></h3>
+          <p>The Python-inspired language with C-level performance. Open source, free, and built for the modern era of systems programming.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Language</h4>
+          <a href="#features">Features</a>
+          <a href="#code">Documentation</a>
+          <a href="#install">Installation</a>
+          <a href="#">Release Notes</a>
+        </div>
+        <div class="footer-col">
+          <h4>Community</h4>
+          <a href="https://github.com" target="_blank" rel="noopener">GitHub</a>
+          <a href="https://discord.com" target="_blank" rel="noopener">Discord</a>
+          <a href="https://twitter.com" target="_blank" rel="noopener">X / Twitter</a>
+          <a href="#">Blog</a>
+        </div>
+        <div class="footer-col">
+          <h4>More</h4>
+          <a href="#">Code of Conduct</a>
+          <a href="#">License (MIT)</a>
+          <a href="#">Privacy Policy</a>
+          <a href="#">Security</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>&copy; 2026 The Cobra Project. All rights reserved.</span>
+        <span>Built with ❤️ by the Cobra team &middot; Powered by <a href="#">Cobra</a></span>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // ========== THEME TOGGLE ==========
+    const html = document.documentElement;
+    const themeIconDesktop = document.getElementById('themeIconDesktop');
+    const themeIconMobile = document.getElementById('themeIconMobile');
+    const themeToggleDesktop = document.getElementById('themeToggleDesktop');
+    const themeToggleMobile = document.getElementById('themeToggleMobile');
+
+    function getTheme() { return localStorage.getItem('theme') || 'light'; }
+    function setTheme(theme) {
+      html.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      const icon = theme === 'dark' ? '🌙' : '☀️';
+      themeIconDesktop.textContent = icon;
+      themeIconMobile.textContent = icon;
+    }
+    function toggleTheme() {
+      setTheme(getTheme() === 'dark' ? 'light' : 'dark');
+    }
+    themeToggleDesktop.addEventListener('click', toggleTheme);
+    themeToggleMobile.addEventListener('click', toggleTheme);
+    setTheme(getTheme());
+
+    // Show mobile theme toggle on small screens
+    function checkMobileTheme() {
+      themeToggleMobile.style.display = window.innerWidth <= 768 ? 'flex' : 'none';
+    }
+    checkMobileTheme();
+    window.addEventListener('resize', checkMobileTheme);
+
+    // ========== MOBILE HAMBURGER ==========
+    const hamburger = document.getElementById('hamburger');
+    const navLinks = document.getElementById('navLinks');
+    const navOverlay = document.getElementById('navOverlay');
+
+    hamburger.addEventListener('click', () => {
+      const open = navLinks.classList.toggle('open');
+      navOverlay.classList.toggle('open');
+      hamburger.classList.toggle('active');
+      hamburger.setAttribute('aria-expanded', open);
+    });
+    navOverlay.addEventListener('click', closeMenu);
+    function closeMenu() {
+      navLinks.classList.remove('open');
+      navOverlay.classList.remove('open');
+      hamburger.classList.remove('active');
+      hamburger.setAttribute('aria-expanded', 'false');
+    }
+
+    // ========== NAVBAR SCROLL ==========
+    const navbar = document.getElementById('navbar');
+    let lastScroll = 0;
+    window.addEventListener('scroll', () => {
+      const y = window.scrollY;
+      if (y > 50) {
+        navbar.classList.add('scrolled');
+      } else {
+        navbar.classList.remove('scrolled');
+      }
+      lastScroll = y;
+    });
+
+    // ========== SMOOTH SCROLL ==========
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function(e) {
+        const href = this.getAttribute('href');
+        if (href === '#') return;
+        e.preventDefault();
+        const target = document.querySelector(href);
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    });
+
+    // ========== INTERSECTION OBSERVER (Reveal) ==========
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('active');
+        }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+    document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+    // ========== CODE TABS ==========
+    const tabs = document.querySelectorAll('.code-tab');
+    const panels = {
+      hello: document.getElementById('panel-hello'),
+      fib: document.getElementById('panel-fib'),
+      struct: document.getElementById('panel-struct'),
+      async: document.getElementById('panel-async'),
+    };
+
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        tabs.forEach(t => { t.classList.remove('active'); t.setAttribute('aria-selected', 'false'); });
+        tab.classList.add('active');
+        tab.setAttribute('aria-selected', 'true');
+        Object.values(panels).forEach(p => p.classList.remove('active'));
+        const target = panels[tab.dataset.tab];
+        if (target) target.classList.add('active');
+      });
+    });
+
+    // ========== TYPING EFFECT ==========
+    const codeSnippets = [
+      `fn main():` + '\n' +
+      `    print("Hello, World!")` + '\n' +
+      `` + '\n' +
+      `# Compile & run:` + '\n' +
+      `$ cobra run hello.cb` + '\n' +
+      `$ Hello, World!`,
+
+      `fn fib(n: int) -> int:` + '\n' +
+      `    match n:` + '\n' +
+      `        0 => return 0` + '\n' +
+      `        1 => return 1` + '\n' +
+      `        _ => return fib(n-1) + fib(n-2)`,
+
+      `struct Server:` + '\n' +
+      `    port: int` + '\n' +
+      `    host: string` + '\n' +
+      `` + '\n' +
+      `    fn listen(self):` + '\n' +
+      `        print("Listening on {self.host}:{self.port}")`,
+    ];
+
+    const typingText = document.getElementById('typingText');
+    let snippetIndex = 0;
+    let charIndex = 0;
+    let isDeleting = false;
+    let typeSpeed = 30;
+
+    function typeEffect() {
+      const current = codeSnippets[snippetIndex];
+      if (!isDeleting) {
+        typingText.textContent = current.substring(0, charIndex + 1);
+        charIndex++;
+        if (charIndex === current.length) {
+          isDeleting = true;
+          typeSpeed = 2000;
+          setTimeout(typeEffect, typeSpeed);
+          return;
+        }
+        typeSpeed = 25 + Math.random() * 25;
+      } else {
+        typingText.textContent = current.substring(0, charIndex);
+        charIndex--;
+        if (charIndex === 0) {
+          isDeleting = false;
+          snippetIndex = (snippetIndex + 1) % codeSnippets.length;
+          typeSpeed = 500;
+          setTimeout(typeEffect, typeSpeed);
+          return;
+        }
+        typeSpeed = 10 + Math.random() * 15;
+      }
+      setTimeout(typeEffect, typeSpeed);
+    }
+    setTimeout(typeEffect, 800);
+
+    // ========== COPY INSTALL COMMAND ==========
+    function copyInstall() {
+      const text = 'curl -fsSL https://cobra-lang.org/install.sh | bash';
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text);
+      } else {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+      }
+      const btn = document.querySelector('.copy-btn');
+      const orig = btn.textContent;
+      btn.textContent = 'Copied!';
+      btn.style.background = 'var(--primary)';
+      setTimeout(() => {
+        btn.textContent = orig;
+        btn.style.background = '';
+      }, 2000);
+    }
+
+    // ========== STARS BACKGROUND ==========
+    const starsContainer = document.getElementById('stars');
+    for (let i = 0; i < 120; i++) {
+      const star = document.createElement('div');
+      star.className = 'star';
+      star.style.left = Math.random() * 100 + '%';
+      star.style.top = Math.random() * 100 + '%';
+      star.style.setProperty('--duration', (2 + Math.random() * 4) + 's');
+      star.style.animationDelay = Math.random() * 4 + 's';
+      star.style.width = star.style.height = (1 + Math.random() * 2) + 'px';
+      starsContainer.appendChild(star);
+    }
+  </script>
+</body>
+</html>

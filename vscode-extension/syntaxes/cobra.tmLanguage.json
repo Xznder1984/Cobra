@@ -1,0 +1,222 @@
+{
+  "scopeName": "source.cobra",
+  "name": "Cobra",
+  "fileTypes": ["cb"],
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "include": "#strings"
+    },
+    {
+      "include": "#numbers"
+    },
+    {
+      "include": "#keywords"
+    },
+    {
+      "include": "#types"
+    },
+    {
+      "include": "#function-declaration"
+    },
+    {
+      "include": "#function-call"
+    },
+    {
+      "include": "#type-annotation"
+    },
+    {
+      "include": "#operators"
+    },
+    {
+      "include": "#punctuation"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "begin": "/\\*",
+          "end": "\\*/",
+          "name": "comment.block.cobra"
+        },
+        {
+          "begin": "//",
+          "end": "$",
+          "name": "comment.line.double-slash.cobra"
+        }
+      ]
+    },
+    "strings": {
+      "patterns": [
+        {
+          "begin": "\"",
+          "end": "\"",
+          "name": "string.quoted.double.cobra",
+          "patterns": [
+            {
+              "match": "\\\\.",
+              "name": "constant.character.escape.cobra"
+            },
+            {
+              "match": "\\{.*?\\}",
+              "name": "string.interpolation.cobra"
+            }
+          ]
+        },
+        {
+          "begin": "'",
+          "end": "'",
+          "name": "string.quoted.single.cobra",
+          "patterns": [
+            {
+              "match": "\\\\.",
+              "name": "constant.character.escape.cobra"
+            }
+          ]
+        }
+      ]
+    },
+    "numbers": {
+      "patterns": [
+        {
+          "match": "\\b0[xX][0-9a-fA-F][0-9a-fA-F_]*\\b",
+          "name": "constant.numeric.hex.cobra"
+        },
+        {
+          "match": "\\b0[oO][0-7][0-7_]*\\b",
+          "name": "constant.numeric.octal.cobra"
+        },
+        {
+          "match": "\\b0[bB][01][01_]*\\b",
+          "name": "constant.numeric.binary.cobra"
+        },
+        {
+          "match": "\\b[0-9][0-9_]*\\.[0-9][0-9_]*([eE][+-]?[0-9][0-9_]*)?\\b",
+          "name": "constant.numeric.float.cobra"
+        },
+        {
+          "match": "\\b[0-9][0-9_]*\\b",
+          "name": "constant.numeric.integer.cobra"
+        }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "match": "\\b(fn)\\s+([a-zA-Z_][a-zA-Z0-9_]*)\\s*\\(",
+          "captures": {
+            "1": {
+              "name": "keyword.control.fn.cobra"
+            },
+            "2": {
+              "name": "entity.name.function.cobra"
+            }
+          }
+        },
+        {
+          "match": "\\b(fn)\\b",
+          "name": "keyword.control.fn.cobra"
+        },
+        {
+          "match": "\\b(if|elif|else|while|for|in|return|match|try|throw)\\b",
+          "name": "keyword.control.cobra"
+        },
+        {
+          "match": "\\b(let|const|var|mut|defer|unsafe)\\b",
+          "name": "keyword.other.cobra"
+        },
+        {
+          "match": "\\b(import|pub|as|is)\\b",
+          "name": "keyword.control.import.cobra"
+        },
+        {
+          "match": "\\b(struct|class|enum|trait|impl)\\b",
+          "name": "keyword.other.declaration.cobra"
+        },
+        {
+          "match": "\\b(async|await)\\b",
+          "name": "keyword.control.async.cobra"
+        },
+        {
+          "match": "\\b(true|false|nil)\\b",
+          "name": "constant.language.cobra"
+        },
+        {
+          "match": "\\b(self|super)\\b",
+          "name": "variable.language.cobra"
+        },
+        {
+          "match": "\\b(and|or|not)\\b",
+          "name": "keyword.operator.logical.cobra"
+        }
+      ]
+    },
+    "types": {
+      "patterns": [
+        {
+          "match": "\\b(void|int|i8|i16|i32|i64|u8|u16|u32|u64|f32|f64|bool|str|char)\\b",
+          "name": "storage.type.cobra"
+        }
+      ]
+    },
+    "function-declaration": {
+      "patterns": [
+        {
+          "match": "\\bfn\\s+([a-zA-Z_][a-zA-Z0-9_]*)\\s*\\(",
+          "captures": {
+            "1": {
+              "name": "entity.name.function.cobra"
+            }
+          }
+        }
+      ]
+    },
+    "function-call": {
+      "patterns": [
+        {
+          "match": "\\b([a-zA-Z_][a-zA-Z0-9_]*)\\s*\\(",
+          "captures": {
+            "1": {
+              "name": "entity.name.function.call.cobra"
+            }
+          }
+        }
+      ]
+    },
+    "type-annotation": {
+      "patterns": [
+        {
+          "match": ":\\s*([a-zA-Z_][a-zA-Z0-9_]*)\\b",
+          "captures": {
+            "1": {
+              "name": "storage.type.cobra"
+            }
+          }
+        }
+      ]
+    },
+    "operators": {
+      "patterns": [
+        {
+          "match": "(=|\\+|\\-|\\*|\\/|%|&|\\||\\^|!|<|>|\\?|::|->|=>|\\.\\.)",
+          "name": "keyword.operator.cobra"
+        },
+        {
+          "match": "(==|!=|<=|>=|&&|\\|\\||<<|>>|\\+=|\\-=|\\*=|/=|%=|&=|\\|=|\\^=)",
+          "name": "keyword.operator.cobra"
+        }
+      ]
+    },
+    "punctuation": {
+      "patterns": [
+        {
+          "match": "[{}()\\[\\];,:.]",
+          "name": "punctuation.separator.cobra"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "name": "cobra-lang",
+  "displayName": "Cobra Language",
+  "description": "Cobra programming language support",
+  "version": "0.1.0",
+  "publisher": "cobra-lang",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "activationEvents": [
+    "onLanguage:cobra"
+  ],
+  "main": "./out/extension",
+  "contributes": {
+    "languages": [
+      {
+        "id": "cobra",
+        "aliases": [
+          "Cobra"
+        ],
+        "extensions": [
+          ".cb"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "cobra",
+        "scopeName": "source.cobra",
+        "path": "./syntaxes/cobra.tmLanguage.json"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "cobra",
+        "path": "./snippets/cobra.json"
+      }
+    ]
+  }
+}

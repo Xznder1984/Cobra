@@ -1,0 +1,50 @@
+# Build artifacts
+build/
+**/*.o
+**/*.so
+**/*.dylib
+!runtime/libcobra_runtime.a
+!**/bin/*
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+.DS_Store?
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temp files
+/tmp/
+*.tmp
+*.temp
+
+# Rust/Cargo (for interop)
+target/
+
+# Python (for interop)
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+
+# Node (for VS Code extension)
+vscode-extension/node_modules/
+vscode-extension/out/
+vscode-extension/*.vsix
+
+# Website build
+website/node_modules/
+website/dist/
+
+# Package manager
+cobra.lock
+dist/
+*.tar.gz

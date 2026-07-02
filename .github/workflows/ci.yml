@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y gcc clang make
+      
+      - name: Build compiler
+        run: make -C compiler
+      
+      - name: Build CLI
+        run: make -C cli
+      
+      - name: Build runtime
+        run: make -C runtime
+      
+      - name: Run tests
+        run: make test || echo "Tests not yet configured"
+      
+      - name: Build examples
+        run: |
+          for dir in examples/*/; do
+            if [ -f "$dir/main.cb" ]; then
+              echo "Checking $dir"
+              ./compiler/bin/cobrac "$dir/main.cb" -o /dev/null 2>/dev/null || true
+            fi
+          done

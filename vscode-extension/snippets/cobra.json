@@ -1,0 +1,117 @@
+{
+  "Function definition": {
+    "prefix": "fn",
+    "body": "fn ${1:name}(${2:params})${3: -> ${4:Type}} {\n\t${5:/* code */}\n}",
+    "description": "Define a function"
+  },
+  "Main function": {
+    "prefix": "fnmain",
+    "body": "fn main() {\n\t${1:/* code */}\n}",
+    "description": "Define the main function"
+  },
+  "Let declaration": {
+    "prefix": "let",
+    "body": "let ${1:name}${2:: ${3:Type}} = ${4:value};",
+    "description": "Declare an immutable variable"
+  },
+  "Var declaration": {
+    "prefix": "var",
+    "body": "var ${1:name}${2:: ${3:Type}} = ${4:value};",
+    "description": "Declare a mutable variable"
+  },
+  "Const declaration": {
+    "prefix": "const",
+    "body": "const ${1:NAME}${2:: ${3:Type}} = ${4:value};",
+    "description": "Declare a constant"
+  },
+  "If statement": {
+    "prefix": "if",
+    "body": "if ${1:condition} {\n\t${2:/* code */}\n}",
+    "description": "If statement"
+  },
+  "If-elif-else chain": {
+    "prefix": "ifelif",
+    "body": "if ${1:condition} {\n\t${2:/* code */}\n} elif ${3:condition} {\n\t${4:/* code */}\n} else {\n\t${5:/* code */}\n}",
+    "description": "If-elif-else chain"
+  },
+  "Elif statement": {
+    "prefix": "elif",
+    "body": "elif ${1:condition} {\n\t${2:/* code */}\n}",
+    "description": "Else-if statement"
+  },
+  "Else statement": {
+    "prefix": "else",
+    "body": "else {\n\t${1:/* code */}\n}",
+    "description": "Else statement"
+  },
+  "While loop": {
+    "prefix": "while",
+    "body": "while ${1:condition} {\n\t${2:/* code */}\n}",
+    "description": "While loop"
+  },
+  "For in loop": {
+    "prefix": "for",
+    "body": "for ${1:item} in ${2:iterable} {\n\t${3:/* code */}\n}",
+    "description": "For-in loop"
+  },
+  "Struct definition": {
+    "prefix": "struct",
+    "body": "struct ${1:Name} {\n\t${2:field}: ${3:Type},\n}",
+    "description": "Define a struct"
+  },
+  "Class definition": {
+    "prefix": "class",
+    "body": "class ${1:Name} {\n\t${2:/* fields and methods */}\n}",
+    "description": "Define a class"
+  },
+  "Enum definition": {
+    "prefix": "enum",
+    "body": "enum ${1:Name} {\n\t${2:Variant},\n}",
+    "description": "Define an enum"
+  },
+  "Trait definition": {
+    "prefix": "trait",
+    "body": "trait ${1:Name} {\n\tfn ${2:method}(${3:params})${4: -> ${5:Type}};\n}",
+    "description": "Define a trait"
+  },
+  "Impl block": {
+    "prefix": "impl",
+    "body": "impl ${1:Type} {\n\tfn ${2:method}(${3:params})${4: -> ${5:Type}} {\n\t\t${6:/* code */}\n\t}\n}",
+    "description": "Implementation block"
+  },
+  "Match expression": {
+    "prefix": "match",
+    "body": "match ${1:value} {\n\t${2:pattern} => ${3:result},\n}",
+    "description": "Match expression"
+  },
+  "Print line": {
+    "prefix": "println",
+    "body": "println(\"${1:message}\");",
+    "description": "Print a message"
+  },
+  "Import statement": {
+    "prefix": "import",
+    "body": "import ${1:module};",
+    "description": "Import a module"
+  },
+  "Pub function": {
+    "prefix": "pubfn",
+    "body": "pub fn ${1:name}(${2:params})${3: -> ${4:Type}} {\n\t${5:/* code */}\n}",
+    "description": "Define a public function"
+  },
+  "Async function": {
+    "prefix": "asyncfn",
+    "body": "async fn ${1:name}(${2:params})${3: -> ${4:Type}} {\n\t${5:/* code */}\n}",
+    "description": "Define an async function"
+  },
+  "Try expression": {
+    "prefix": "try",
+    "body": "try {\n\t${1:/* code */}\n}",
+    "description": "Try block"
+  },
+  "Defer statement": {
+    "prefix": "defer",
+    "body": "defer ${1:/* expression */};",
+    "description": "Defer a call"
+  }
+}
