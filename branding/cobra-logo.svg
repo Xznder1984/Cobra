@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 120">
+  <defs>
+    <linearGradient id="primary" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#2E8B57"/>
+      <stop offset="100%" stop-color="#00D4AA"/>
+    </linearGradient>
+  </defs>
+  <!-- Cobra Icon (left side, scaled down) -->
+  <g transform="translate(10, 10) scale(0.8)">
+    <path d="M50 6 C22 6 6 22 6 48 C6 70 18 78 28 78 L50 66 L72 78 C82 78 94 70 94 48 C94 22 78 6 50 6Z" fill="url(#primary)"/>
+    <circle cx="40" cy="52" r="5" fill="#FFD43B"/>
+    <circle cx="60" cy="52" r="5" fill="#FFD43B"/>
+    <ellipse cx="40" cy="52" rx="1.2" ry="3.5" fill="#1A1A2E"/>
+    <ellipse cx="60" cy="52" rx="1.2" ry="3.5" fill="#1A1A2E"/>
+    <path d="M50 67 L50 84 L46 90 M50 84 L54 90" stroke="#FF6B6B" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M30 38 L36 44 L42 38 M58 38 L64 44 L70 38 M44 28 L50 34 L56 28" fill="none" stroke="#1A6B4A" stroke-width="1" opacity="0.4"/>
+  </g>
+  <!-- Text: Cobra -->
+  <g transform="translate(110, 35)">
+    <text x="0" y="50" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="60" font-weight="900" fill="#2E8B57" letter-spacing="2">Cobra</text>
+    <!-- Stylized 'O' accent -->
+    <ellipse cx="112" cy="18" rx="14" ry="14" fill="none" stroke="#2E8B57" stroke-width="3" opacity="0.3"/>
+    <text x="0" y="78" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="#6B7280" font-weight="500" letter-spacing="3">A MODERN SYSTEMS LANGUAGE</text>
+  </g>
+</svg>

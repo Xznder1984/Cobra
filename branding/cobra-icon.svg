@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="primary" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#2E8B57"/>
+      <stop offset="100%" stop-color="#00D4AA"/>
+    </linearGradient>
+  </defs>
+  <!-- Cobra Hood (shield shape) -->
+  <path d="M50 6 C22 6 6 22 6 48 C6 70 18 78 28 78 L50 66 L72 78 C82 78 94 70 94 48 C94 22 78 6 50 6Z" fill="url(#primary)"/>
+  <!-- Eye sockets -->
+  <path d="M36 52 C36 46 44 46 44 52" fill="none" stroke="#1A6B4A" stroke-width="1.5"/>
+  <path d="M56 52 C56 46 64 46 64 52" fill="none" stroke="#1A6B4A" stroke-width="1.5"/>
+  <!-- Eyes -->
+  <circle cx="40" cy="52" r="5" fill="#FFD43B"/>
+  <circle cx="60" cy="52" r="5" fill="#FFD43B"/>
+  <!-- Slit pupils -->
+  <ellipse cx="40" cy="52" rx="1.2" ry="3.5" fill="#1A1A2E"/>
+  <ellipse cx="60" cy="52" rx="1.2" ry="3.5" fill="#1A1A2E"/>
+  <!-- Nostrils -->
+  <circle cx="48" cy="58" r="1" fill="#1A6B4A"/>
+  <circle cx="52" cy="58" r="1" fill="#1A6B4A"/>
+  <!-- Tongue -->
+  <path d="M50 67 L50 84 L46 90 M50 84 L54 90" stroke="#FF6B6B" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Hood scale pattern (decorative V-shapes) -->
+  <path d="M30 38 L36 44 L42 38" fill="none" stroke="#1A6B4A" stroke-width="1" opacity="0.4"/>
+  <path d="M58 38 L64 44 L70 38" fill="none" stroke="#1A6B4A" stroke-width="1" opacity="0.4"/>
+  <path d="M44 28 L50 34 L56 28" fill="none" stroke="#1A6B4A" stroke-width="1" opacity="0.4"/>
+</svg>
