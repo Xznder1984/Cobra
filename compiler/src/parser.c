@@ -70,7 +70,6 @@ static void synchronize(Parser *p) {
 
 static Node *parse_stmt(Parser *p);
 static Node *parse_expr(Parser *p);
-static Node *parse_assignment(Parser *p);
 
 static Node *parse_block(Parser *p, int need_indent) {
     Node *block = node_create(NODE_BLOCK, p->current.line, p->current.column);
@@ -821,6 +820,7 @@ static int get_precedence(TokenType type) {
         case TOK_LSHIFT: case TOK_RSHIFT: return 8;
         case TOK_PLUS: case TOK_MINUS: return 9;
         case TOK_STAR: case TOK_SLASH: case TOK_PERCENT: return 10;
+        case TOK_EQ: case TOK_DOT_DOT: case TOK_DOT_DOT_EQ: return 0;
         default: return -1;
     }
 }
@@ -891,6 +891,26 @@ static Node *parse_binary(Parser *p, int min_prec) {
                     node->data.as_expr.target_type = type_create_named(
                         str_ndup(tn.start, tn.length));
                 }
+                left = node;
+                break;
+            }
+            case TOK_EQ: {
+                advance(p);
+                Node *node = node_create(NODE_ASSIGN, left->line, left->column);
+                node->data.assign.op = TOK_EQ;
+                node->data.assign.target = left;
+                node->data.assign.value = parse_binary(p, prec);
+                left = node;
+                break;
+            }
+            case TOK_DOT_DOT:
+            case TOK_DOT_DOT_EQ: {
+                TokenType dot_op = op;
+                advance(p);
+                Node *node = node_create(NODE_RANGE, left->line, left->column);
+                node->data.range.start = left;
+                node->data.range.end = parse_binary(p, prec + 1);
+                node->data.range.inclusive = (dot_op == TOK_DOT_DOT_EQ);
                 left = node;
                 break;
             }

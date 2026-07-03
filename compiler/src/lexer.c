@@ -522,7 +522,7 @@ Token lexer_next(Lexer *l) {
             break;
     }
 
-    if (t.length == 0) {
+    if (t.length == 0 && t.type != TOK_STRING) {
         t.length = l->pos - (int)(t.start - l->source);
     }
     return t;

@@ -23,9 +23,14 @@ Cobra is an indentation-based (Python-style) programming language compiled to x8
 - `use python <pkg>` — auto pip install + link Python embed libs + link installed .so files.
 - `use cargo <crate>` — auto create Cargo.toml scaffolding (cdylib), add crate as dep, create src/lib.rs, cargo build --release, link result.
 
+## Recent Fixes / New Features
+- **For loop codegen** (`cg_gen_for`): Range-based iteration (`for i in 0..10` and `for i in 0..=10`). Allocates loop variable via `cg_add_var`, evaluates range end each iteration to avoid scratch-slot conflict, uses `jge`/`jg` for exclusive/inclusive bounds.
+- **Assignment codegen** (`NODE_ASSIGN`): `let mut` vars can be reassigned with `=`. Parser handles `TOK_EQ` in `parse_binary` (right-associative, precedence 0). Codegen stores value to var's stack slot via `cg_find_var`.
+- **Range expression parsing**: `TOK_DOT_DOT`/`TOK_DOT_DOT_EQ` handled in `parse_binary` to create `NODE_RANGE` with start/end/inclusive fields.
+- **Empty string fix**: Lexer `lexer_next` line 527-529 recomputed `t.length` for all zero-length tokens (including empty strings), corrupting the string value to `"` (0x22). Fixed by skipping recomputation for `TOK_STRING`.
+- **cg_find_var searches from end**: Changed iteration direction so inner scopes (e.g., for loop variables with same name) shadow outer ones.
+
 ## Not Yet Working (codegen not implemented for these AST nodes)
-- `let mut` reassignment (assignment operator `=` not parsed)
-- `for` loops (parser produces AST, codegen missing)
 - Function calls to user-defined functions (only built-ins work)
 - Function parameters cannot be read (stored to stack, not tracked for lookup)
 - `continue` (no-op)

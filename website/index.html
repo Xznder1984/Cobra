@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cobra Programming Language</title>
+  <link rel="icon" type="image/svg+xml" href="../branding/cobra-icon.svg">
   <link rel="icon" type="image/png" sizes="32x32" href="../branding/cobra-icon-32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="../branding/cobra-icon-16.png">
   <link rel="apple-touch-icon" sizes="180x180" href="../branding/cobra-icon-512.png">
@@ -938,6 +939,7 @@
       <div class="nav-links" id="navLinks">
         <a href="#features" onclick="closeMenu()">Features</a>
         <a href="#code" onclick="closeMenu()">Code</a>
+        <a href="docs/" onclick="closeMenu()">Docs</a>
         <a href="#install" onclick="closeMenu()">Install</a>
         <a href="#community" onclick="closeMenu()">Community</a>
         <button class="theme-toggle nav-theme-toggle" id="themeToggleDesktop" aria-label="Toggle theme">
@@ -1182,18 +1184,12 @@
           <p>Star the repo, browse the source, report issues, and contribute.</p>
           <span style="color:var(--accent);font-weight:600">github.com/cobra-lang →</span>
         </a>
-        <a href="https://discord.com" target="_blank" rel="noopener" class="community-card reveal reveal-delay-2">
+        <div class="community-card reveal reveal-delay-2" style="opacity:0.6;cursor:default">
           <div class="icon">💬</div>
           <h3>Discord</h3>
           <p>Chat with the team and community. Get help, share ideas, and hang out.</p>
-          <span style="color:var(--accent);font-weight:600">discord.gg/cobra →</span>
-        </a>
-        <a href="https://twitter.com" target="_blank" rel="noopener" class="community-card reveal reveal-delay-3">
-          <div class="icon">🐦</div>
-          <h3>X / Twitter</h3>
-          <p>Follow for release announcements, tips, and community highlights.</p>
-          <span style="color:var(--accent);font-weight:600">@cobra_lang →</span>
-        </a>
+          <span style="color:var(--text-muted);font-weight:600">Coming Soon</span>
+        </div>
       </div>
     </div>
   </section>
@@ -1209,15 +1205,16 @@
         <div class="footer-col">
           <h4>Language</h4>
           <a href="#features">Features</a>
-          <a href="#code">Documentation</a>
+          <a href="docs/">Documentation</a>
+          <a href="docs/getting-started">Getting Started</a>
+          <a href="docs/language-reference">Language Reference</a>
           <a href="#install">Installation</a>
           <a href="#">Release Notes</a>
         </div>
         <div class="footer-col">
           <h4>Community</h4>
           <a href="https://github.com" target="_blank" rel="noopener">GitHub</a>
-          <a href="https://discord.com" target="_blank" rel="noopener">Discord</a>
-          <a href="https://twitter.com" target="_blank" rel="noopener">X / Twitter</a>
+          <a href="#" style="color:var(--text-muted);cursor:default">Discord (Coming Soon)</a>
           <a href="#">Blog</a>
         </div>
         <div class="footer-col">

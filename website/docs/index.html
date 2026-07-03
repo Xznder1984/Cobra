@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Documentation - Cobra Programming Language</title>
+  <link rel="icon" type="image/svg+xml" href="../../branding/cobra-icon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="../../branding/cobra-icon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="../../branding/cobra-icon-16.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      line-height: 1.6;
+      transition: background 0.4s ease, color 0.4s ease;
+    }
+    :root {
+      --primary: #2E8B57; --primary-dark: #1E6B3F; --primary-light: #3DAF6E;
+      --secondary: #FFD43B; --accent: #00D4AA;
+      --gradient-1: linear-gradient(135deg, #2E8B57, #00D4AA);
+      --bg-primary: #ffffff; --bg-secondary: #f8f9fa;
+      --text-primary: #1a1a2e; --text-secondary: #4a4a6a;
+      --text-muted: #8888aa;
+      --card-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+      --nav-bg: rgba(255, 255, 255, 0.85);
+      --code-bg: #1e1e2e; --code-text: #cdd6f4;
+      --footer-bg: #0a1628; --footer-text: #8899bb;
+    }
+    [data-theme="dark"] {
+      --bg-primary: #0d1117; --bg-secondary: #161b22;
+      --text-primary: #e6edf3; --text-secondary: #b0b8c4;
+      --text-muted: #6e7681;
+      --card-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      --nav-bg: rgba(13, 17, 23, 0.85);
+      --code-bg: #0d1117;
+      --footer-bg: #010409; --footer-text: #6e7681;
+    }
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+    .navbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: var(--nav-bg); backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(0,0,0,0.06); padding: 10px 0;
+    }
+    .nav-inner {
+      display: flex; align-items: center; justify-content: space-between;
+      max-width: 1200px; margin: 0 auto; padding: 0 24px;
+    }
+    .nav-logo { display: flex; align-items: center; gap: 12px; font-size: 1.3rem; font-weight: 800; color: var(--text-primary); text-decoration: none; }
+    .nav-logo span { background: var(--gradient-1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .nav-links { display: flex; align-items: center; gap: 24px; }
+    .nav-links a { font-size: 0.9rem; font-weight: 500; color: var(--text-secondary); text-decoration: none; transition: color 0.3s; }
+    .nav-links a:hover { color: var(--primary); }
+    .theme-toggle {
+      background: #e0e0e0; border: none; width: 36px; height: 36px; border-radius: 50%;
+      cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center; transition: background 0.3s;
+    }
+    [data-theme="dark"] .theme-toggle { background: #2d3748; }
+    .page-header {
+      padding: 120px 0 48px; text-align: center;
+    }
+    .page-header h1 { font-size: 2.5rem; font-weight: 800; color: var(--text-primary); }
+    .page-header p { font-size: 1.1rem; color: var(--text-secondary); margin-top: 8px; }
+    .docs-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; padding-bottom: 80px;
+    }
+    .docs-card {
+      background: var(--bg-primary); border: 1px solid rgba(0,0,0,0.08); border-radius: 12px;
+      padding: 32px; transition: transform 0.3s, box-shadow 0.3s; text-decoration: none; display: block;
+    }
+    [data-theme="dark"] .docs-card { border-color: rgba(255,255,255,0.06); }
+    .docs-card:hover { transform: translateY(-4px); box-shadow: var(--card-shadow); }
+    .docs-card h3 { font-size: 1.3rem; font-weight: 700; color: var(--text-primary); margin-bottom: 8px; }
+    .docs-card p { color: var(--text-secondary); font-size: 0.95rem; line-height: 1.6; }
+    .docs-card .tag {
+      display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 0.75rem;
+      font-weight: 600; margin-top: 12px; background: var(--primary); color: white;
+    }
+    .footer {
+      background: var(--footer-bg); color: var(--footer-text); padding: 40px 0; text-align: center;
+    }
+    .footer a { color: var(--accent); text-decoration: none; }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-inner">
+      <a href="../" class="nav-logo"><svg viewBox="0 0 36 36" width="28" height="28" fill="none"><path d="M18 2C9.716 2 3 8.716 3 17v2c0 8.284 6.716 15 15 15s15-6.716 15-15v-2c0-8.284-6.716-15-15-15z" fill="#2E8B57"/><path d="M10 17c0 4.418 3.582 8 8 8s8-3.582 8-8" stroke="#fff" stroke-width="2.5" stroke-linecap="round" fill="none"/><path d="M14 14l4-4 4 4" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg><span>Cobra</span></a>
+      <div class="nav-links">
+        <a href="../">Home</a>
+        <a href="getting-started">Getting Started</a>
+        <a href="language-reference">Language Reference</a>
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme"><span id="themeIcon">☀️</span></button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="page-header">
+    <div class="container">
+      <h1>Documentation</h1>
+      <p>Learn how to use the Cobra programming language</p>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="docs-grid">
+      <a href="getting-started" class="docs-card">
+        <h3>Getting Started</h3>
+        <p>Install Cobra, write your first program, and learn the basic workflow. Covers installation, CLI usage, project structure, and more.</p>
+        <span class="tag">Beginner</span>
+      </a>
+      <a href="language-reference" class="docs-card">
+        <h3>Language Reference</h3>
+        <p>Complete reference for the Cobra language: types, functions, control flow, structs, traits, operators, pattern matching, error handling, and more.</p>
+        <span class="tag">Reference</span>
+      </a>
+      <a href="https://github.com/Xznder1984/Cobra" class="docs-card" target="_blank" rel="noopener">
+        <h3>Standard Library</h3>
+        <p>Browse the Cobra standard library source code on GitHub for collections, I/O, math, and runtime functions.</p>
+        <span class="tag">Source</span>
+      </a>
+      <a href="../examples/" class="docs-card">
+        <h3>Examples</h3>
+        <p>Explore example projects including Hello World, calculator, CLI tools, and loops to see Cobra in action.</p>
+        <span class="tag">Examples</span>
+      </a>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="container">
+      <p>&copy; 2026 The Cobra Project. <a href="../">Home</a></p>
+    </div>
+  </footer>
+
+  <script>
+    const html = document.documentElement;
+    const themeToggle = document.getElementById('themeToggle');
+    const themeIcon = document.getElementById('themeIcon');
+    const saved = localStorage.getItem('theme');
+    if (saved) html.setAttribute('data-theme', saved);
+    function updateIcon() { themeIcon.textContent = html.getAttribute('data-theme') === 'dark' ? '🌙' : '☀️'; }
+    updateIcon();
+    themeToggle.addEventListener('click', () => {
+      const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      localStorage.setItem('theme', next);
+      updateIcon();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Getting Started - Cobra Programming Language</title>
+  <link rel="icon" type="image/svg+xml" href="../../branding/cobra-icon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="../../branding/cobra-icon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="../../branding/cobra-icon-16.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      line-height: 1.6; transition: background 0.4s ease, color 0.4s ease;
+    }
+    :root {
+      --primary: #2E8B57; --primary-dark: #1E6B3F; --primary-light: #3DAF6E;
+      --secondary: #FFD43B; --accent: #00D4AA;
+      --gradient-1: linear-gradient(135deg, #2E8B57, #00D4AA);
+      --bg-primary: #ffffff; --bg-secondary: #f8f9fa;
+      --text-primary: #1a1a2e; --text-secondary: #4a4a6a; --text-muted: #8888aa;
+      --nav-bg: rgba(255, 255, 255, 0.85);
+      --code-bg: #1e1e2e; --code-text: #cdd6f4;
+      --footer-bg: #0a1628; --footer-text: #8899bb;
+      --card-shadow: 0 8px 32px rgba(0,0,0,0.08);
+    }
+    [data-theme="dark"] {
+      --bg-primary: #0d1117; --bg-secondary: #161b22;
+      --text-primary: #e6edf3; --text-secondary: #b0b8c4; --text-muted: #6e7681;
+      --nav-bg: rgba(13, 17, 23, 0.85);
+      --code-bg: #0d1117;
+      --footer-bg: #010409; --footer-text: #6e7681;
+      --card-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    }
+    .container { max-width: 900px; margin: 0 auto; padding: 0 24px; }
+    .navbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: var(--nav-bg); backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(0,0,0,0.06); padding: 10px 0;
+    }
+    .nav-inner {
+      display: flex; align-items: center; justify-content: space-between;
+      max-width: 1200px; margin: 0 auto; padding: 0 24px;
+    }
+    .nav-logo { display: flex; align-items: center; gap: 12px; font-size: 1.3rem; font-weight: 800; color: var(--text-primary); text-decoration: none; }
+    .nav-logo span { background: var(--gradient-1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .nav-links { display: flex; align-items: center; gap: 24px; }
+    .nav-links a { font-size: 0.9rem; font-weight: 500; color: var(--text-secondary); text-decoration: none; transition: color 0.3s; }
+    .nav-links a:hover { color: var(--primary); }
+    .nav-links a.active { color: var(--primary); }
+    .theme-toggle {
+      background: #e0e0e0; border: none; width: 36px; height: 36px; border-radius: 50%;
+      cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center; transition: background 0.3s;
+    }
+    [data-theme="dark"] .theme-toggle { background: #2d3748; }
+    .page { padding-top: 80px; }
+    .sidebar {
+      position: fixed; top: 80px; left: 0; bottom: 0; width: 260px;
+      overflow-y: auto; padding: 32px 24px; border-right: 1px solid rgba(0,0,0,0.06);
+      background: var(--bg-secondary);
+    }
+    [data-theme="dark"] .sidebar { border-color: rgba(255,255,255,0.06); }
+    .sidebar h3 { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); margin-bottom: 12px; }
+    .sidebar nav { display: flex; flex-direction: column; gap: 4px; }
+    .sidebar a {
+      padding: 6px 12px; border-radius: 6px; font-size: 0.88rem;
+      color: var(--text-secondary); text-decoration: none; transition: all 0.2s;
+    }
+    .sidebar a:hover { background: rgba(46,139,87,0.08); color: var(--primary); }
+    .content {
+      margin-left: 260px; padding: 48px 48px 80px; max-width: 900px;
+    }
+    .content h1 { font-size: 2.2rem; font-weight: 800; color: var(--text-primary); margin-bottom: 24px; }
+    .content h2 {
+      font-size: 1.5rem; font-weight: 700; color: var(--text-primary);
+      margin: 40px 0 16px; padding-bottom: 8px;
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+    }
+    [data-theme="dark"] .content h2 { border-color: rgba(255,255,255,0.06); }
+    .content h3 { font-size: 1.15rem; font-weight: 600; color: var(--text-primary); margin: 24px 0 12px; }
+    .content p { color: var(--text-secondary); margin-bottom: 16px; font-size: 0.95rem; }
+    .content code {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.85rem;
+      background: rgba(46,139,87,0.08); padding: 2px 6px; border-radius: 4px; color: var(--text-primary);
+    }
+    .content pre {
+      background: var(--code-bg); color: var(--code-text); padding: 20px; border-radius: 8px;
+      overflow-x: auto; margin-bottom: 20px; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem;
+      line-height: 1.5;
+    }
+    .content pre code { background: none; padding: 0; color: inherit; font-size: inherit; }
+    .content ul, .content ol { color: var(--text-secondary); margin-bottom: 16px; padding-left: 24px; font-size: 0.95rem; }
+    .content li { margin-bottom: 6px; }
+    .content a { color: var(--primary); text-decoration: none; }
+    .content a:hover { text-decoration: underline; }
+    .content table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 0.9rem; }
+    .content th, .content td { padding: 10px 14px; border: 1px solid rgba(0,0,0,0.06); text-align: left; color: var(--text-secondary); }
+    [data-theme="dark"] .content th, [data-theme="dark"] .content td { border-color: rgba(255,255,255,0.06); }
+    .content th { font-weight: 600; background: var(--bg-secondary); color: var(--text-primary); }
+    .footer { background: var(--footer-bg); color: var(--footer-text); padding: 40px 0; text-align: center; margin-left: 260px; }
+    .footer a { color: var(--accent); text-decoration: none; }
+    hr { border: none; border-top: 1px solid rgba(0,0,0,0.06); margin: 40px 0; }
+    [data-theme="dark"] hr { border-color: rgba(255,255,255,0.06); }
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .content { margin-left: 0; padding: 24px; }
+      .footer { margin-left: 0; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-inner">
+      <a href="../" class="nav-logo"><svg viewBox="0 0 36 36" width="28" height="28" fill="none"><path d="M18 2C9.716 2 3 8.716 3 17v2c0 8.284 6.716 15 15 15s15-6.716 15-15v-2c0-8.284-6.716-15-15-15z" fill="#2E8B57"/><path d="M10 17c0 4.418 3.582 8 8 8s8-3.582 8-8" stroke="#fff" stroke-width="2.5" stroke-linecap="round" fill="none"/><path d="M14 14l4-4 4 4" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg><span>Cobra</span></a>
+      <div class="nav-links">
+        <a href="../">Home</a>
+        <a href="../docs/" class="active">Docs</a>
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme"><span id="themeIcon">☀️</span></button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="page">
+    <aside class="sidebar">
+      <h3>Getting Started</h3>
+      <nav>
+        <a href="#installation">Installation</a>
+        <a href="#first-program">Your First Program</a>
+        <a href="#cli">CLI Usage</a>
+        <a href="#building">Building and Running</a>
+        <a href="#troubleshooting">Troubleshooting</a>
+      </nav>
+    </aside>
+
+    <div class="content">
+      <h1>Getting Started with Cobra</h1>
+      <p>Welcome to Cobra! This guide will help you install the Cobra compiler, create your first program, and learn the basic workflow.</p>
+
+      <h2 id="installation">Installation</h2>
+
+      <h3>Prerequisites</h3>
+      <ul>
+        <li><strong>macOS</strong> or <strong>Linux</strong></li>
+        <li>A C compiler (Clang or GCC)</li>
+        <li>Make</li>
+        <li>Git (optional, for building from source)</li>
+      </ul>
+
+      <h3>Option 1: Install via Homebrew (macOS)</h3>
+      <pre><code>brew install Xznder1984/cobra/cobra</code></pre>
+
+      <h3>Option 2: Install via script</h3>
+      <pre><code>curl -fsSL https://raw.githubusercontent.com/Xznder1984/Cobra/main/install.sh | sh</code></pre>
+
+      <h3>Option 3: Build from source</h3>
+      <pre><code>git clone https://github.com/Xznder1984/Cobra.git
+cd Cobra
+make build</code></pre>
+
+      <h3>Verify installation</h3>
+      <pre><code>cobra --version</code></pre>
+
+      <hr>
+
+      <h2 id="first-program">Your First Cobra Program</h2>
+      <p>Create a file called <code>hello.cb</code>:</p>
+      <pre><code>fn main() {
+    println("Hello, World!")
+    println("Welcome to Cobra!")
+}</code></pre>
+
+      <h3>Run it</h3>
+      <pre><code>cobra hello.cb</code></pre>
+
+      <p>Behind the scenes, <code>cobra hello.cb</code>:</p>
+      <ol>
+        <li>Compiles <code>.cb</code> source to assembly (via <code>cobrac</code>)</li>
+        <li>Assembles with Clang/GCC</li>
+        <li>Links into a native executable</li>
+        <li>Runs it</li>
+      </ol>
+
+      <hr>
+
+      <h2 id="cli">CLI Usage</h2>
+      <table>
+        <tr><th>Command</th><th>Description</th></tr>
+        <tr><td><code>cobra</code></td><td>Start interactive REPL</td></tr>
+        <tr><td><code>cobra file.cb</code></td><td>Compile and run a Cobra file</td></tr>
+        <tr><td><code>cobra build</code></td><td>Build project (looks for <code>src/main.cb</code>)</td></tr>
+        <tr><td><code>cobra --version</code></td><td>Show version</td></tr>
+        <tr><td><code>cobra --help</code></td><td>Show help</td></tr>
+      </table>
+
+      <hr>
+
+      <h2 id="building">Building and Running</h2>
+
+      <h3>Build a project</h3>
+      <pre><code>cobra build</code></pre>
+      <p>This looks for <code>src/main.cb</code> (or <code>main.cb</code>) and produces <code>build/program</code>.</p>
+
+      <h3>Run a single file</h3>
+      <pre><code>cobra hello.cb</code></pre>
+      <p>Compiles and runs <code>hello.cb</code> in one step. The binary is left at <code>build/hello</code>.</p>
+
+      <h3>REPL (Interactive Mode)</h3>
+      <pre><code>cobra</code></pre>
+      <p>Starts an interactive REPL for experimentation:</p>
+      <pre><code>Cobra 0.1.0
+Type 'exit()' to quit.
+
+>>> "Hello" + " World"
+Hello World
+>>> 2 + 2
+4
+>>> exit()</code></pre>
+
+      <hr>
+
+      <h2 id="troubleshooting">Troubleshooting</h2>
+
+      <h3><code>cobrac: command not found</code></h3>
+      <p>Ensure the compiler binary is in your PATH:</p>
+      <pre><code>export PATH="$PATH:/usr/local/bin"</code></pre>
+
+      <h3>Build fails with assembler errors</h3>
+      <p>Make sure Clang or GCC is installed:</p>
+      <pre><code># macOS
+xcode-select --install
+
+# Ubuntu/Debian
+sudo apt-get install build-essential
+
+# Fedora
+sudo dnf install gcc</code></pre>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="container">
+      <p>&copy; 2026 The Cobra Project &middot; <a href="../docs/">Documentation</a> &middot; <a href="../">Home</a></p>
+    </div>
+  </footer>
+
+  <script>
+    const html = document.documentElement;
+    const themeToggle = document.getElementById('themeToggle');
+    const themeIcon = document.getElementById('themeIcon');
+    const saved = localStorage.getItem('theme');
+    if (saved) html.setAttribute('data-theme', saved);
+    function updateIcon() { themeIcon.textContent = html.getAttribute('data-theme') === 'dark' ? '🌙' : '☀️'; }
+    updateIcon();
+    themeToggle.addEventListener('click', () => {
+      const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      localStorage.setItem('theme', next);
+      updateIcon();
+    });
+  </script>
+</body>
+</html>

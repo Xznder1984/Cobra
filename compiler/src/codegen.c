@@ -42,7 +42,7 @@ static int cg_gen_node(CodeGenerator *cg, Node *node);
 static int cg_gen_expr(CodeGenerator *cg, Node *node);
 
 static int cg_find_var(CodeGenerator *cg, const char *name) {
-    for (int i = 0; i < cg->var_count; i++) {
+    for (int i = cg->var_count - 1; i >= 0; i--) {
         if (strcmp(cg->var_names[i], name) == 0) return cg->var_offsets[i];
     }
     return -1;
@@ -69,6 +69,7 @@ static int cg_count_let_decls(Node *node) {
     int count = 0;
     if (!node) return 0;
     if (node->type == NODE_LET_DECL) return 1;
+    if (node->type == NODE_FOR) return 1;
     if (node->type == NODE_BLOCK) {
         for (int i = 0; i < node->data.block.statements.count; i++) {
             count += cg_count_let_decls(node->data.block.statements.items[i]);
@@ -190,17 +191,50 @@ static int cg_gen_while(CodeGenerator *cg, Node *node) {
 }
 
 static int cg_gen_for(CodeGenerator *cg, Node *node) {
-    int label_start = cg->label_count++;
+    const char *var_name = node->data.for_loop.var_name;
+    Node *iterable = node->data.for_loop.iterable;
+
+    int label_cond = cg->label_count++;
     int label_end = cg->label_count++;
 
-    cg_gen_expr(cg, node->data.for_loop.iterable);
+    if (iterable && iterable->type == NODE_RANGE) {
+        cg_add_var(cg, var_name);
+        int var_offset = cg->var_offsets[cg->var_count - 1];
 
-    fprintf(cg->output, ".L%d:\n", label_start);
-    if (node->data.for_loop.body) {
-        cg_gen_node(cg, node->data.for_loop.body);
+        cg_gen_expr(cg, iterable->data.range.start);
+        fprintf(cg->output, "    mov [rbp - %d], rax\n", var_offset);
+
+        fprintf(cg->output, ".L%d:\n", label_cond);
+
+        cg_gen_expr(cg, iterable->data.range.end);
+        fprintf(cg->output, "    mov rcx, rax\n");
+        fprintf(cg->output, "    mov rax, [rbp - %d]\n", var_offset);
+        fprintf(cg->output, "    cmp rax, rcx\n");
+        if (iterable->data.range.inclusive) {
+            fprintf(cg->output, "    jg .L%d\n", label_end);
+        } else {
+            fprintf(cg->output, "    jge .L%d\n", label_end);
+        }
+
+        if (node->data.for_loop.body) {
+            cg_gen_node(cg, node->data.for_loop.body);
+        }
+
+        fprintf(cg->output, "    mov rax, [rbp - %d]\n", var_offset);
+        fprintf(cg->output, "    add rax, 1\n");
+        fprintf(cg->output, "    mov [rbp - %d], rax\n", var_offset);
+        fprintf(cg->output, "    jmp .L%d\n", label_cond);
+        fprintf(cg->output, ".L%d:\n", label_end);
+    } else {
+        cg_gen_expr(cg, iterable);
+
+        fprintf(cg->output, ".L%d:\n", label_cond);
+        if (node->data.for_loop.body) {
+            cg_gen_node(cg, node->data.for_loop.body);
+        }
+        fprintf(cg->output, "    jmp .L%d\n", label_cond);
+        fprintf(cg->output, ".L%d:\n", label_end);
     }
-    fprintf(cg->output, "    jmp .L%d\n", label_start);
-    fprintf(cg->output, ".L%d:\n", label_end);
     return 1;
 }
 
@@ -406,6 +440,17 @@ static int cg_gen_expr(CodeGenerator *cg, Node *node) {
             fprintf(cg->output, "    xor rax, rax\n");
             return 1;
         case NODE_IDENTIFIER: return cg_gen_identifier(cg, node);
+        case NODE_ASSIGN: {
+            Node *target = node->data.assign.target;
+            if (target && target->type == NODE_IDENTIFIER) {
+                int offset = cg_find_var(cg, target->data.identifier.name);
+                if (offset >= 0) {
+                    cg_gen_expr(cg, node->data.assign.value);
+                    fprintf(cg->output, "    mov [rbp - %d], rax\n", offset);
+                }
+            }
+            return 1;
+        }
         case NODE_BINARY: return cg_gen_binary(cg, node);
         case NODE_UNARY: return cg_gen_unary(cg, node);
         case NODE_CALL: return cg_gen_call(cg, node);
