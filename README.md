@@ -30,13 +30,13 @@ fn main() {
 ### Install
 
 ```bash
-curl -fsSL https://cobra-lang.org/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/Xznder1984/Cobra/main/installer/install.sh | sh
 ```
 
 ### Or Build from Source
 
 ```bash
-git clone https://github.com/Xzander1984/Cobra.git
+git clone https://github.com/Xznder1984/Cobra.git
 cd Cobra
 make build
 ```
@@ -165,5 +165,5 @@ MIT License — see [LICENSE](LICENSE) for details.
 
 ## Community
 
-- [GitHub](https://github.com/Xzander1984/Cobra)
+- [GitHub](https://github.com/Xznder1984/Cobra)
 - Documentation: [https://cobra-lang.org](https://cobra-lang.org)
