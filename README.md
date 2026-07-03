@@ -30,7 +30,7 @@ fn main() {
 ### Install
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Xznder1984/Cobra/main/installer/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/Xznder1984/Cobra/main/install.sh | sh
 ```
 
 ### Or Build from Source
@@ -114,7 +114,7 @@ cobra/
 ├── docs/            # Documentation
 ├── examples/        # Example projects
 ├── tests/           # Tests
-├── installer/       # Installation scripts
+├── install.sh         # Installation script
 └── benchmarks/      # Performance benchmarks
 ```
 

@@ -1,6 +1,6 @@
 #!/bin/sh
 # Cobra Programming Language Installer
-# Usage: curl -fsSL https://raw.githubusercontent.com/Xznder1984/Cobra/main/installer/install.sh | sh
+# Usage: curl -fsSL https://raw.githubusercontent.com/Xznder1984/Cobra/main/install.sh | sh
 set -eu
 
 REPO="Xznder1984/Cobra"
@@ -17,7 +17,7 @@ BLUE="\033[34m"
 # ─── Help / Usage ────────────────────────────────────────────────────────────
 usage() {
     cat <<'EOF'
-Usage: curl -fsSL https://raw.githubusercontent.com/Xznder1984/Cobra/main/installer/install.sh | sh [flags] [flags]
+Usage: curl -fsSL https://raw.githubusercontent.com/Xznder1984/Cobra/main/install.sh | sh [flags] [flags]
 
 Flags (passed as environment variables):
   COBRA_VERSION=<version>    Install a specific version (default: latest)
