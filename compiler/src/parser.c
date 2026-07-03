@@ -106,7 +106,7 @@ static Node *parse_block(Parser *p, int need_indent) {
     return block;
 }
 
-static Node *parse_fn_def(Parser *p) {
+static Node *parse_fn_def(Parser *p, int is_extern) {
     Token fn_tok = advance(p);
     Token name_tok = consume(p, TOK_IDENTIFIER, "Expected function name");
     if (name_tok.type == TOK_ERROR) return NULL;
@@ -115,40 +115,48 @@ static Node *parse_fn_def(Parser *p) {
     node->data.fn_def.name = str_ndup(name_tok.start, name_tok.length);
     node->data.fn_def.is_public = 0;
     node->data.fn_def.is_async = 0;
+    node->data.fn_def.is_extern = is_extern;
+    node->data.fn_def.link_name = NULL;
     node->data.fn_def.return_type = NULL;
     node_list_init(&node->data.fn_def.params);
     node_list_init(&node->data.fn_def.body);
     node_list_init(&node->data.fn_def.type_params);
 
-    consume(p, TOK_LPAREN, "Expected '(' after function name");
+    if (check(p, TOK_LPAREN)) {
+        consume(p, TOK_LPAREN, "Expected '(' after function name");
 
-    if (!check(p, TOK_RPAREN)) {
-        do {
-            if (check(p, TOK_IDENTIFIER)) {
-                Token pname = advance(p);
-                Node *param = node_create(NODE_PARAM, pname.line, pname.column);
-                param->data.param.name = str_ndup(pname.start, pname.length);
-                param->data.param.type = NULL;
-                param->data.param.default_value = NULL;
+        if (!check(p, TOK_RPAREN)) {
+            do {
+                if (check(p, TOK_IDENTIFIER)) {
+                    Token pname = advance(p);
+                    Node *param = node_create(NODE_PARAM, pname.line, pname.column);
+                    param->data.param.name = str_ndup(pname.start, pname.length);
+                    param->data.param.type = NULL;
+                    param->data.param.default_value = NULL;
 
-                if (match(p, TOK_COLON)) {
-                    if (check(p, TOK_IDENTIFIER)) {
-                        Token tname = advance(p);
-                        param->data.param.type = type_create_named(
-                            str_ndup(tname.start, tname.length));
+                    if (match(p, TOK_COLON)) {
+                        if (check(p, TOK_IDENTIFIER)) {
+                            Token tname = advance(p);
+                            param->data.param.type = type_create_named(
+                                str_ndup(tname.start, tname.length));
+                        }
                     }
-                }
 
-                if (match(p, TOK_EQ)) {
-                    param->data.param.default_value = parse_expr(p);
-                }
+                    if (match(p, TOK_EQ)) {
+                        param->data.param.default_value = parse_expr(p);
+                    }
 
-                node_list_add(&node->data.fn_def.params, param);
-            }
-        } while (match(p, TOK_COMMA));
+                    node_list_add(&node->data.fn_def.params, param);
+                }
+            } while (match(p, TOK_COMMA));
+        }
+
+        consume(p, TOK_RPAREN, "Expected ')' after parameters");
+    } else if (!is_extern) {
+        diag_add(p->diags, DIAG_ERROR, peek(p).line, peek(p).column,
+                 "Expected '(' after function name");
+        p->had_error = 1;
     }
-
-    consume(p, TOK_RPAREN, "Expected ')' after parameters");
 
     if (match(p, TOK_ARROW)) {
         if (check(p, TOK_IDENTIFIER)) {
@@ -181,7 +189,15 @@ static Node *parse_fn_def(Parser *p) {
         }
     }
 
-    if (check(p, TOK_COLON)) {
+    if (is_extern) {
+        if (match(p, TOK_SEMICOLON) || check(p, TOK_NEWLINE)) {
+            // extern fn declaration, no body
+        } else if (check(p, TOK_COLON)) {
+            diag_add(p->diags, DIAG_ERROR, fn_tok.line, fn_tok.column,
+                     "Extern function '%s' cannot have a body", node->data.fn_def.name);
+            p->had_error = 1;
+        }
+    } else if (check(p, TOK_COLON)) {
         advance(p);
         Node *fn_body = parse_block(p, 1);
         node->data.fn_def.body = fn_body->data.block.statements;
@@ -311,7 +327,7 @@ static Node *parse_class_def(Parser *p) {
             if (match(p, TOK_NEWLINE)) continue;
 
             if (check(p, TOK_FN)) {
-                Node *method = parse_fn_def(p);
+                Node *method = parse_fn_def(p, 0);
                 if (method) node_list_add(&node->data.class_def.methods, method);
             } else if (check(p, TOK_IDENTIFIER)) {
                 Token fname = advance(p);
@@ -384,7 +400,7 @@ static Node *parse_trait_def(Parser *p) {
         while (!check(p, TOK_DEDENT) && !check(p, TOK_EOF)) {
             if (match(p, TOK_NEWLINE)) continue;
             if (check(p, TOK_FN)) {
-                Node *method = parse_fn_def(p);
+                Node *method = parse_fn_def(p, 0);
                 if (method) node_list_add(&node->data.trait_def.methods, method);
             }
             match(p, TOK_NEWLINE);
@@ -559,7 +575,16 @@ static Node *parse_stmt(Parser *p) {
     }
 
     switch (peek(p).type) {
-        case TOK_FN: return parse_fn_def(p);
+        case TOK_FN: return parse_fn_def(p, 0);
+        case TOK_EXTERN:
+            advance(p);
+            if (check(p, TOK_FN)) {
+                return parse_fn_def(p, 1);
+            }
+            diag_add(p->diags, DIAG_ERROR, peek(p).line, peek(p).column,
+                     "Expected 'fn' after 'extern'");
+            p->had_error = 1;
+            return NULL;
         case TOK_LET: return parse_let_decl(p);
         case TOK_CONST: return parse_const_decl(p);
         case TOK_STRUCT: return parse_struct_def(p);

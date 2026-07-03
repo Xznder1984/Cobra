@@ -1,0 +1,61 @@
+// Cobra CLI Demo
+// Showcases all working compiler features
+
+fn main():
+    print("╔════════════════════════════╗")
+    println("")
+    print("║  Cobra Language Demo v0.1  ")
+    println("")
+    print("╚════════════════════════════╝")
+    println("")
+    println("")
+
+    // Arithmetic
+    print("Arithmetic: 1 + 2 * 3 = ")
+    print_int(1 + 2 * 3)
+    println("")
+
+    print("Arithmetic: (1 + 2) * 3 = ")
+    print_int((1 + 2) * 3)
+    println("")
+
+    print("Arithmetic: 100 - 33 = ")
+    print_int(100 - 33)
+    println("")
+
+    print("Arithmetic: 50 / 7 = ")
+    print_int(50 / 7)
+    println("")
+    println("")
+
+    // Comparison
+    if 1:
+        print("1 is truthy")
+        println("")
+    else:
+        print("this won't print")
+        println("")
+
+    // Print variations
+    print("print() - no newline at end")
+    println("println() - adds newline at end")
+    println("")
+    println("")
+
+    // Multiple print_int calls
+    print("Countdown: ")
+    print_int(5)
+    print(" ")
+    print_int(4)
+    print(" ")
+    print_int(3)
+    print(" ")
+    print_int(2)
+    print(" ")
+    print_int(1)
+    println("")
+    println("")
+
+    // Done
+    print("Cobra demo complete!")
+    println("")

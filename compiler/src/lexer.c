@@ -17,7 +17,7 @@ static const char *keywords[] = {
     "try", "throw",
     "type", "and", "or", "not",
     "as", "is", "where",
-    "defer", "unsafe",
+    "defer", "unsafe", "extern",
     NULL
 };
 
@@ -34,7 +34,7 @@ static TokenType keyword_types[] = {
     TOK_TRY, TOK_THROW,
     TOK_TYPE, TOK_AND, TOK_OR, TOK_NOT,
     TOK_AS, TOK_IS, TOK_WHERE,
-    TOK_DEFER, TOK_UNSAFE,
+    TOK_DEFER, TOK_UNSAFE, TOK_EXTERN,
 };
 
 const char *token_type_name(TokenType type) {
@@ -85,6 +85,7 @@ const char *token_type_name(TokenType type) {
         case TOK_WHERE: return "where";
         case TOK_DEFER: return "defer";
         case TOK_UNSAFE: return "unsafe";
+        case TOK_EXTERN: return "extern";
         case TOK_PLUS: return "+";
         case TOK_MINUS: return "-";
         case TOK_STAR: return "*";

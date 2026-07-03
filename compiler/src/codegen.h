@@ -15,6 +15,12 @@ typedef struct {
     char **strings;
     int string_count;
     int string_capacity;
+    char **var_names;
+    int *var_offsets;
+    int var_count;
+    int var_capacity;
+    int current_fn_var_base;
+    int fn_end_label;
 } CodeGenerator;
 
 CodeGenerator *cg_create(DiagnosticList *diags);

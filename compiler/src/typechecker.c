@@ -180,8 +180,10 @@ static Type *tc_check_node(TypeChecker *tc, Node *node) {
                 if (p->data.param.default_value)
                     tc_check_node(tc, p->data.param.default_value);
             }
-            for (int i = 0; i < node->data.fn_def.body.count; i++) {
-                tc_check_node(tc, node->data.fn_def.body.items[i]);
+            if (!node->data.fn_def.is_extern) {
+                for (int i = 0; i < node->data.fn_def.body.count; i++) {
+                    tc_check_node(tc, node->data.fn_def.body.items[i]);
+                }
             }
             return node->data.fn_def.return_type
                 ? type_clone(node->data.fn_def.return_type)

@@ -190,6 +190,23 @@ static int cmd_init(int argc, char *argv[]) {
 static int cmd_build(int argc, char *argv[]) {
     printf("Building Cobra project...\n");
 
+    char link_flags[512] = "-lc";
+    for (int i = 2; i < argc; i++) {
+        if (strcmp(argv[i], "-l") == 0 && i + 1 < argc) {
+            strcat(link_flags, " -l");
+            strcat(link_flags, argv[++i]);
+        } else if (strncmp(argv[i], "-l", 2) == 0) {
+            strcat(link_flags, " ");
+            strcat(link_flags, argv[i]);
+        } else if (strcmp(argv[i], "-L") == 0 && i + 1 < argc) {
+            strcat(link_flags, " -L");
+            strcat(link_flags, argv[++i]);
+        } else if (strncmp(argv[i], "-L", 2) == 0) {
+            strcat(link_flags, " ");
+            strcat(link_flags, argv[i]);
+        }
+    }
+
     int result = system("mkdir -p build");
 
     result = system("cobrac src/main.cb -o build/main.s 2>/dev/null");
@@ -204,7 +221,10 @@ static int cmd_build(int argc, char *argv[]) {
         return 1;
     }
 
-    result = system("clang build/main.o -o build/program -lc 2>/dev/null");
+    char link_cmd[1024];
+    snprintf(link_cmd, sizeof(link_cmd),
+             "clang build/main.o -o build/program %s 2>/dev/null", link_flags);
+    result = system(link_cmd);
     if (result != 0) {
         printf("Linking error.\n");
         return 1;

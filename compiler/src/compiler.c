@@ -19,6 +19,9 @@ Compiler *compiler_create(void) {
     c->optimize_level = 0;
     c->emit_ir = 0;
     c->verbose = 0;
+    c->link_flags = NULL;
+    c->link_flag_count = 0;
+    c->link_flag_capacity = 0;
     return c;
 }
 
@@ -27,6 +30,8 @@ void compiler_free(Compiler *c) {
         free(c->source_path);
         free(c->output_path);
         free(c->source);
+        for (int i = 0; i < c->link_flag_count; i++) free(c->link_flags[i]);
+        free(c->link_flags);
         diag_list_free(c->diags);
         free(c);
     }

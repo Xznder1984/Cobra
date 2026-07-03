@@ -16,6 +16,12 @@ CodeGenerator *cg_create(DiagnosticList *diags) {
     cg->string_count = 0;
     cg->string_capacity = 0;
     cg->str_label_count = 0;
+    cg->var_names = NULL;
+    cg->var_offsets = NULL;
+    cg->var_count = 0;
+    cg->var_capacity = 0;
+    cg->current_fn_var_base = 16;
+    cg->fn_end_label = -1;
     return cg;
 }
 
@@ -25,12 +31,58 @@ void cg_free(CodeGenerator *cg) {
         ir_module_free(cg->ir);
         for (int i = 0; i < cg->string_count; i++) free(cg->strings[i]);
         free(cg->strings);
+        for (int i = 0; i < cg->var_count; i++) free(cg->var_names[i]);
+        free(cg->var_names);
+        free(cg->var_offsets);
         free(cg);
     }
 }
 
 static int cg_gen_node(CodeGenerator *cg, Node *node);
 static int cg_gen_expr(CodeGenerator *cg, Node *node);
+
+static int cg_find_var(CodeGenerator *cg, const char *name) {
+    for (int i = 0; i < cg->var_count; i++) {
+        if (strcmp(cg->var_names[i], name) == 0) return cg->var_offsets[i];
+    }
+    return -1;
+}
+
+static int cg_add_var(CodeGenerator *cg, const char *name) {
+    if (cg->var_count >= cg->var_capacity) {
+        cg->var_capacity = cg->var_capacity ? cg->var_capacity * 2 : 8;
+        cg->var_names = realloc(cg->var_names, sizeof(char*) * cg->var_capacity);
+        cg->var_offsets = realloc(cg->var_offsets, sizeof(int) * cg->var_capacity);
+    }
+    int offset = cg->current_fn_var_base + cg->var_count * 8;
+    cg->var_names[cg->var_count] = strdup(name);
+    cg->var_offsets[cg->var_count] = offset;
+    return cg->var_count++;
+}
+
+static void cg_reset_vars(CodeGenerator *cg) {
+    for (int i = 0; i < cg->var_count; i++) free(cg->var_names[i]);
+    cg->var_count = 0;
+}
+
+static int cg_count_let_decls(Node *node) {
+    int count = 0;
+    if (!node) return 0;
+    if (node->type == NODE_LET_DECL) return 1;
+    if (node->type == NODE_BLOCK) {
+        for (int i = 0; i < node->data.block.statements.count; i++) {
+            count += cg_count_let_decls(node->data.block.statements.items[i]);
+        }
+        return count;
+    }
+    if (node->type == NODE_FN_DEF) {
+        for (int i = 0; i < node->data.fn_def.body.count; i++) {
+            count += cg_count_let_decls(node->data.fn_def.body.items[i]);
+        }
+        return count;
+    }
+    return 0;
+}
 
 static int cg_gen_module(CodeGenerator *cg, Node *node) {
     for (int i = 0; i < node->data.module.statements.count; i++) {
@@ -40,6 +92,18 @@ static int cg_gen_module(CodeGenerator *cg, Node *node) {
 }
 
 static int cg_gen_fn_def(CodeGenerator *cg, Node *node) {
+    if (node->data.fn_def.is_extern) {
+        fprintf(cg->output, "\n# Extern function %s (resolved by linker)\n", node->data.fn_def.name);
+        return 1;
+    }
+
+    cg_reset_vars(cg);
+    cg->fn_end_label = cg->label_count++;
+
+    int let_count = cg_count_let_decls(node);
+    int stack_size = 16 + 8 * let_count;
+    if (stack_size % 16 != 0) stack_size += 8;
+
     fprintf(cg->output, "\n# Function %s\n", node->data.fn_def.name);
     fprintf(cg->output, ".text\n");
     fprintf(cg->output, ".globl _%s\n", node->data.fn_def.name);
@@ -47,7 +111,7 @@ static int cg_gen_fn_def(CodeGenerator *cg, Node *node) {
 
     fprintf(cg->output, "    push rbp\n");
     fprintf(cg->output, "    mov rbp, rsp\n");
-    fprintf(cg->output, "    sub rsp, 16\n");
+    fprintf(cg->output, "    sub rsp, %d\n", stack_size);
 
     for (int i = 0; i < node->data.fn_def.params.count && i < 6; i++) {
         static const char *regs64[] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
@@ -58,6 +122,7 @@ static int cg_gen_fn_def(CodeGenerator *cg, Node *node) {
         cg_gen_node(cg, node->data.fn_def.body.items[i]);
     }
 
+    fprintf(cg->output, ".Lfunc_end_%d:\n", cg->fn_end_label);
     fprintf(cg->output, "    mov rsp, rbp\n");
     fprintf(cg->output, "    pop rbp\n");
     fprintf(cg->output, "    ret\n");
@@ -67,6 +132,11 @@ static int cg_gen_fn_def(CodeGenerator *cg, Node *node) {
 static int cg_gen_return(CodeGenerator *cg, Node *node) {
     if (node->data.return_stmt.value) {
         cg_gen_expr(cg, node->data.return_stmt.value);
+    } else {
+        fprintf(cg->output, "    xor rax, rax\n");
+    }
+    if (cg->fn_end_label >= 0) {
+        fprintf(cg->output, "    jmp .Lfunc_end_%d\n", cg->fn_end_label);
     }
     return 1;
 }
@@ -152,11 +222,11 @@ static int cg_gen_call(CodeGenerator *cg, Node *node);
 
 static int cg_gen_binary(CodeGenerator *cg, Node *node) {
     cg_gen_expr(cg, node->data.binary.left);
-    fprintf(cg->output, "    push rax\n");
+    fprintf(cg->output, "    mov [rbp - 8], rax\n");
 
     cg_gen_expr(cg, node->data.binary.right);
     fprintf(cg->output, "    mov rcx, rax\n");
-    fprintf(cg->output, "    pop rax\n");
+    fprintf(cg->output, "    mov rax, [rbp - 8]\n");
 
     switch (node->data.binary.op) {
         case TOK_PLUS:
@@ -286,6 +356,25 @@ static int cg_gen_identifier(CodeGenerator *cg, Node *node) {
         fprintf(cg->output, "    xor rax, rax\n");
         return 1;
     }
+    int offset = cg_find_var(cg, name);
+    if (offset >= 0) {
+        fprintf(cg->output, "    mov rax, [rbp - %d]\n", offset);
+        return 1;
+    }
+    return 1;
+}
+
+static int cg_gen_let_decl(CodeGenerator *cg, Node *node) {
+    const char *name = node->data.let_decl.name;
+
+    if (node->data.let_decl.value) {
+        cg_gen_expr(cg, node->data.let_decl.value);
+    } else {
+        fprintf(cg->output, "    xor rax, rax\n");
+    }
+
+    int idx = cg_add_var(cg, name);
+    fprintf(cg->output, "    mov [rbp - %d], rax\n", cg->var_offsets[idx]);
     return 1;
 }
 
@@ -335,6 +424,7 @@ static int cg_gen_node(CodeGenerator *cg, Node *node) {
         case NODE_FOR: return cg_gen_for(cg, node);
         case NODE_BLOCK: return cg_gen_block(cg, node);
         case NODE_EXPR_STMT: return cg_gen_expr_stmt(cg, node);
+        case NODE_LET_DECL: return cg_gen_let_decl(cg, node);
         case NODE_BREAK:
         case NODE_CONTINUE:
             return 1;
@@ -364,7 +454,11 @@ int cg_generate(CodeGenerator *cg, Node *node, const char *output_path) {
         fprintf(cg->output, "\n.cstring\n");
         for (int i = 0; i < cg->string_count; i++) {
             fprintf(cg->output, ".Lstr%d:\n", i);
-            fprintf(cg->output, "    .asciz \"%s\"\n", cg->strings[i]);
+            if (cg->strings[i][0] == '\0') {
+                fprintf(cg->output, "    .byte 0\n");
+            } else {
+                fprintf(cg->output, "    .asciz \"%s\"\n", cg->strings[i]);
+            }
         }
     }
 

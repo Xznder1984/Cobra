@@ -11,6 +11,8 @@ static void print_usage(void) {
     printf("  -O<level>    Set optimization level (0-3)\n");
     printf("  -S           Generate assembly only\n");
     printf("  -v           Verbose output\n");
+    printf("  -l<lib>      Link against library\n");
+    printf("  -L<dir>      Add library directory\n");
     printf("  --help       Show this help\n");
     printf("  --version    Show version\n");
 }
@@ -40,6 +42,16 @@ int main(int argc, char *argv[]) {
         }
         if (argv[i][0] == '-' && argv[i][1] == 'O') {
             optimize = atoi(argv[i] + 2);
+            continue;
+        }
+        if (strcmp(argv[i], "-l") == 0 || strcmp(argv[i], "-L") == 0) {
+            if (i + 1 < argc) {
+                // -l and -L with space separator: consume both parts
+                i++;
+            }
+            continue;
+        }
+        if (strncmp(argv[i], "-l", 2) == 0 || strncmp(argv[i], "-L", 2) == 0) {
             continue;
         }
         if (argv[i][0] != '-') {

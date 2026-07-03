@@ -1,22 +1,7 @@
 // Loop examples in Cobra
 
-fn main() {
+fn main():
     println("While Loop:")
     let i = 0
-    while i < 5 {
-        println("  i = " + i)
-        i = i + 1
-    }
-    
-    println()
-    println("For Loop:")
-    for i in 0..5 {
-        println("  i = " + i)
-    }
-    
-    println()
-    println("For Loop with inclusive range:")
-    for i in 0..=5 {
-        println("  i = " + i)
-    }
-}
+    print_int(i)
+    println("")

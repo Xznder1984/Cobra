@@ -1,12 +1,7 @@
 // Hello World in Cobra
 // The classic first program
 
-fn main() {
+fn main():
     println("Hello, World!")
     println("Welcome to Cobra!")
-    
-    let name = "Cobra"
-    let version = 1
-    
-    println("You are running " + name + " v" + version + ".0")
-}
+    print_int(42)

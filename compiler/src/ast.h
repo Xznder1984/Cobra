@@ -125,6 +125,8 @@ struct Node {
             NodeList type_params;
             int is_public;
             int is_async;
+            int is_extern;
+            char *link_name;
         } fn_def;
 
         struct {

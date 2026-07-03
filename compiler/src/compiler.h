@@ -12,6 +12,9 @@ typedef struct {
     int optimize_level;
     int emit_ir;
     int verbose;
+    char **link_flags;
+    int link_flag_count;
+    int link_flag_capacity;
 } Compiler;
 
 Compiler *compiler_create(void);

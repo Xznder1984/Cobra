@@ -206,6 +206,16 @@ static int semantic_analyze_binary(SemanticAnalyzer *sa, Node *node) {
 }
 
 static int semantic_analyze_call(SemanticAnalyzer *sa, Node *node) {
+    if (node->data.call.callee && node->data.call.callee->type == NODE_IDENTIFIER) {
+        const char *name = node->data.call.callee->data.identifier.name;
+        if (strcmp(name, "print") == 0 || strcmp(name, "println") == 0 ||
+            strcmp(name, "print_int") == 0 || strcmp(name, "print_float") == 0) {
+            for (int i = 0; i < node->data.call.args.count; i++) {
+                semantic_analyze_node(sa, node->data.call.args.items[i]);
+            }
+            return !sa->had_error;
+        }
+    }
     if (node->data.call.callee)
         semantic_analyze_node(sa, node->data.call.callee);
     for (int i = 0; i < node->data.call.args.count; i++) {

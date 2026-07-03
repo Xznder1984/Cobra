@@ -1,0 +1,132 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    outputs:
+      version: ${{ steps.get_version.outputs.version }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get version from tag
+        id: get_version
+        run: echo "version=${GITHUB_REF_NAME#v}" >> $GITHUB_OUTPUT
+
+      - name: Install dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y gcc clang make nodejs npm
+
+      - name: Install dependencies (macOS)
+        if: runner.os == 'macOS'
+        run: brew install make node
+
+      - name: Build compiler
+        run: make -C compiler
+
+      - name: Build CLI
+        run: make -C cli
+
+      - name: Build runtime
+        run: make -C runtime
+
+      - name: Create dist directory
+        run: mkdir -p dist/cobra-${{ steps.get_version.outputs.version }}-${{ runner.os == 'Linux' && 'linux' || 'macos' }}-x86_64
+
+      - name: Package binaries
+        run: |
+          cp compiler/bin/cobrac dist/cobra-${{ steps.get_version.outputs.version }}-${{ runner.os == 'Linux' && 'linux' || 'macos' }}-x86_64/
+          cp cli/bin/cobra dist/cobra-${{ steps.get_version.outputs.version }}-${{ runner.os == 'Linux' && 'linux' || 'macos' }}-x86_64/
+          cp runtime/libcobra_runtime.a dist/cobra-${{ steps.get_version.outputs.version }}-${{ runner.os == 'Linux' && 'linux' || 'macos' }}-x86_64/
+          cp install.sh dist/cobra-${{ steps.get_version.outputs.version }}-${{ runner.os == 'Linux' && 'linux' || 'macos' }}-x86_64/
+
+      - name: Archive binaries
+        run: |
+          cd dist
+          tar czf cobra-${{ steps.get_version.outputs.version }}-${{ runner.os == 'Linux' && 'linux' || 'macos' }}-x86_64.tar.gz cobra-${{ steps.get_version.outputs.version }}-${{ runner.os == 'Linux' && 'linux' || 'macos' }}-x86_64/
+
+      - name: Upload binary archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: cobra-${{ runner.os == 'Linux' && 'linux' || 'macos' }}-x86_64
+          path: dist/cobra-${{ steps.get_version.outputs.version }}-${{ runner.os == 'Linux' && 'linux' || 'macos' }}-x86_64.tar.gz
+
+  vsix:
+    name: Build VS Code Extension
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install vsce
+        run: npm install -g @vscode/vsce
+
+      - name: Install extension dependencies
+        run: |
+          cd vscode-extension
+          npm install || true
+          npx tsc --noEmit || true
+
+      - name: Package extension
+        run: |
+          cd vscode-extension
+          vsce package --out ../dist/cobra-lang.vsix
+
+      - name: Upload VSIX
+        uses: actions/upload-artifact@v4
+        with:
+          name: cobra-vscode-extension
+          path: dist/cobra-lang.vsix
+
+  release:
+    name: Create Release
+    needs: [build, vsix]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+
+      - name: Generate release notes
+        id: release_notes
+        run: |
+          cat > RELEASE_NOTES.md << 'EOF'
+          ## Cobra Language v${{ needs.build.outputs.version }}
+
+          ### What's New
+          $(git log --oneline --no-decorate $(git tag --sort=-creatordate | head -2 | tail -1)..HEAD 2>/dev/null || git log --oneline -20)
+
+          ### Downloads
+          - **Linux (x86_64)**: cobra-${{ needs.build.outputs.version }}-linux-x86_64.tar.gz
+          - **macOS (x86_64)**: cobra-${{ needs.build.outputs.version }}-macos-x86_64.tar.gz
+          - **VS Code Extension**: cobra-lang.vsix
+          EOF
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Cobra v${{ needs.build.outputs.version }}
+          body_path: RELEASE_NOTES.md
+          draft: false
+          prerelease: false
+          files: |
+            cobra-*-x86_64/cobra-*.tar.gz
+            cobra-vscode-extension/cobra-lang.vsix

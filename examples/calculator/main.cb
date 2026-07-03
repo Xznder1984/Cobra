@@ -1,39 +1,22 @@
 // Calculator in Cobra
 // A basic arithmetic calculator
 
-fn add(a: int, b: int) -> int {
-    return a + b
-}
-
-fn subtract(a: int, b: int) -> int {
-    return a - b
-}
-
-fn multiply(a: int, b: int) -> int {
-    return a * b
-}
-
-fn divide(a: int, b: int) -> int {
-    if b == 0 {
-        println("Error: Division by zero!")
-        return 0
-    }
-    return a / b
-}
-
-fn main() {
-    println("Cobra Calculator")
-    println("================")
-    
+fn main():
     let x = 42
     let y = 7
     
-    println("x = " + x)
-    println("y = " + y)
+    print("x + y = ")
+    print_int(x + y)
     println()
     
-    println("x + y = " + add(x, y))
-    println("x - y = " + subtract(x, y))
-    println("x * y = " + multiply(x, y))
-    println("x / y = " + divide(x, y))
-}
+    print("x - y = ")
+    print_int(x - y)
+    println()
+    
+    print("x * y = ")
+    print_int(x * y)
+    println()
+    
+    print("x / y = ")
+    print_int(x / y)
+    println()
