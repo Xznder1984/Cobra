@@ -53,8 +53,6 @@ static int build_and_run(const char *cb_file, int run_it) {
 }
 
 static int repl(void) {
-    printf("Cobra %s\n", COBRA_CLI_VERSION);
-    printf("Type 'exit()' to quit.\n\n");
     char line[4096];
     while (1) {
         printf(">>> ");
