@@ -20,6 +20,8 @@ Cobra is an indentation-based (Python-style) programming language compiled to x8
 - Label counter split: `str_label_count` for strings, `label_count` for control flow.
 - Built-in functions recognized by semantic analyzer (no "Undefined symbol" errors).
 - CLI tool with `-l`/`-L` flags for linking external libraries.
+- `use python <pkg>` — auto pip install + link Python embed libs + link installed .so files.
+- `use cargo <crate>` — auto create Cargo.toml scaffolding (cdylib), add crate as dep, create src/lib.rs, cargo build --release, link result.
 
 ## Not Yet Working (codegen not implemented for these AST nodes)
 - `let mut` reassignment (assignment operator `=` not parsed)

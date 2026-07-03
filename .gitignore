@@ -28,6 +28,7 @@ Thumbs.db
 
 # Rust/Cargo (for interop)
 target/
+Cargo.lock
 
 # Python (for interop)
 __pycache__/

@@ -192,6 +192,7 @@ struct Node {
 
         struct {
             char *name;
+            char *package;
         } use_decl;
 
         struct {

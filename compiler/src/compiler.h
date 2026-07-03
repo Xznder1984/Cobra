@@ -18,6 +18,10 @@ typedef struct {
     char **link_flags;
     int link_flag_count;
     int link_flag_capacity;
+    char **python_pkgs;
+    int python_pkg_count;
+    char **cargo_crates;
+    int cargo_crate_count;
 } Compiler;
 
 Compiler *compiler_create(void);

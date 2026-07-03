@@ -436,10 +436,17 @@ static Node *parse_import(Parser *p) {
 static Node *parse_use_decl(Parser *p) {
     Token tok = advance(p);
     Node *node = node_create(NODE_USE_DECL, tok.line, tok.column);
+    node->data.use_decl.name = NULL;
+    node->data.use_decl.package = NULL;
 
     if (check(p, TOK_IDENTIFIER)) {
         Token name = advance(p);
         node->data.use_decl.name = str_ndup(name.start, name.length);
+
+        if (check(p, TOK_IDENTIFIER)) {
+            Token pkg = advance(p);
+            node->data.use_decl.package = str_ndup(pkg.start, pkg.length);
+        }
     } else {
         diag_add(p->diags, DIAG_ERROR, tok.line, tok.column,
                  "Expected 'python' or 'cargo' after 'use'");
