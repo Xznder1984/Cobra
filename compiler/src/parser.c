@@ -212,6 +212,18 @@ static Node *parse_fn_def(Parser *p, int is_extern) {
         Node *ret_stmt = node_create(NODE_RETURN, expr->line, expr->column);
         ret_stmt->data.return_stmt.value = expr;
         node_list_add(&node->data.fn_def.body, ret_stmt);
+    } else if (check(p, TOK_LBRACE)) {
+        diag_add(p->diags, DIAG_ERROR, fn_tok.line, fn_tok.column,
+                 "Cobra uses indentation, not braces, for function bodies. "
+                 "Remove '{' and indent the body.");
+        p->had_error = 1;
+        advance(p);
+        int depth = 1;
+        while (depth > 0 && !check(p, TOK_EOF)) {
+            if (match(p, TOK_LBRACE)) depth++;
+            else if (match(p, TOK_RBRACE)) depth--;
+            else advance(p);
+        }
     }
 
     return node;

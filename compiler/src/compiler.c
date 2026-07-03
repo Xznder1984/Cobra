@@ -540,6 +540,10 @@ int compiler_compile(Compiler *c) {
     parser_free(pre_parser);
     lexer_free(pre_lexer);
 
+    // Clear pre-parse diagnostics — will be regenerated in the real parse
+    c->diags->count = 0;
+    c->diags->printed_up_to = 0;
+
     // Build full source: bridge CB declarations + user source
     char *full_source = NULL;
     size_t full_len = 0;
@@ -607,6 +611,12 @@ int compiler_compile(Compiler *c) {
     if (!result || cg->had_error || c->diags->count > 0) {
         diag_print_all(c->diags);
     }
+
+    int has_errors = 0;
+    for (int i = 0; i < c->diags->count; i++) {
+        if (c->diags->items[i].level == DIAG_ERROR) { has_errors = 1; break; }
+    }
+    if (has_errors) result = 0;
 
     cg_free(cg);
     tc_free(tc);

@@ -63,9 +63,10 @@ void diag_print(Diagnostic *d) {
 }
 
 void diag_print_all(DiagnosticList *list) {
-    for (int i = 0; i < list->count; i++) {
+    for (int i = list->printed_up_to; i < list->count; i++) {
         diag_print(&list->items[i]);
     }
+    list->printed_up_to = list->count;
 }
 
 char *read_file(const char *path) {

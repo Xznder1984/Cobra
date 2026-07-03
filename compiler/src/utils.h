@@ -31,6 +31,7 @@ typedef struct {
     Diagnostic *items;
     int count;
     int capacity;
+    int printed_up_to;
 } DiagnosticList;
 
 DiagnosticList *diag_list_create(void);
