@@ -85,6 +85,7 @@ jobs:
 
       - name: Package extension
         run: |
+          mkdir -p dist
           cd vscode-extension
           vsce package --out ../dist/cobra-lang.vsix
 
