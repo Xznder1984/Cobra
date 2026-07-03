@@ -72,16 +72,15 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
       - name: Install vsce
         run: npm install -g @vscode/vsce
 
-      - name: Install extension dependencies
+      - name: Install extension dependencies & compile
         run: |
           cd vscode-extension
-          npm install || true
-          npx tsc --noEmit || true
+          npm install
 
       - name: Package extension
         run: |

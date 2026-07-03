@@ -3,6 +3,10 @@
   "displayName": "Cobra Language",
   "description": "Cobra programming language support",
   "version": "0.1.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Xznder1984/Cobra.git"
+  },
   "publisher": "cobra-lang",
   "icon": "../branding/cobra-icon-512.png",
   "engines": {
@@ -41,5 +45,21 @@
         "path": "./snippets/cobra.json"
       }
     ]
+  },
+  "scripts": {
+    "compile": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Xznder1984/Cobra/issues"
+  },
+  "homepage": "https://github.com/Xznder1984/Cobra#readme",
+  "devDependencies": {
+    "@types/vscode": "^1.125.0",
+    "typescript": "^6.0.3"
   }
 }
