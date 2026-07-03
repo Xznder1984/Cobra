@@ -1158,7 +1158,7 @@
         <h3>⚡ One-line Install</h3>
         <p>Copy and paste this into your terminal:</p>
         <div class="install-code">
-          <code>curl -fsSL https://cobra-lang.org/install.sh | bash</code>
+          <code>curl -fsSL https://raw.githubusercontent.com/Xznder1984/Cobra/main/install.sh | bash</code>
           <button class="copy-btn" onclick="copyInstall()">Copy</button>
         </div>
         <div class="install-os">
@@ -1397,7 +1397,7 @@
 
     // ========== COPY INSTALL COMMAND ==========
     function copyInstall() {
-      const text = 'curl -fsSL https://cobra-lang.org/install.sh | bash';
+      const text = 'curl -fsSL https://raw.githubusercontent.com/Xznder1984/Cobra/main/install.sh | bash';
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(text);
       } else {
