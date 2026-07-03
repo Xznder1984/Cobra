@@ -49,3 +49,6 @@ website/dist/
 cobra.lock
 dist/
 *.tar.gz
+
+# Session files
+session
