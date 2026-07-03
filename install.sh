@@ -127,13 +127,9 @@ resolve_version() {
         TAG="$($DOWNLOADER "https://api.github.com/repos/${REPO}/releases/latest" 2>/dev/null \
             | sed -n 's/.*"tag_name": *"\([^"]*\)".*/\1/p' 2>/dev/null || true)"
         if [ -z "$TAG" ]; then
-            err "No GitHub releases found for ${REPO}."
-            err "The project is still in development and no pre-built binaries are available yet."
-            err ""
-            err "To build from source:"
-            err "  git clone https://github.com/${REPO}.git"
-            err "  cd Cobra && make build"
-            die "Install via source build instead."
+            warn "No GitHub releases found — building from source instead."
+            BUILD_FROM_SOURCE=1
+            return
         fi
         VERSION="$TAG"
         ok "Latest version: ${VERSION}"
@@ -144,6 +140,38 @@ resolve_version() {
             *) VERSION="v${VERSION}" ;;
         esac
     fi
+}
+
+# ─── Build from Source (fallback when no releases exist) ─────────────────
+build_from_source() {
+    info "Checking build prerequisites..."
+    for cmd in git make; do
+        if ! has_cmd "$cmd"; then
+            die "Missing prerequisite: ${cmd}. Install it and try again."
+        fi
+    done
+    if ! has_cmd gcc && ! has_cmd clang; then
+        die "Missing prerequisite: gcc or clang. Install Xcode Command Line Tools or GCC."
+    fi
+
+    TMP_DIR="$(mktemp -d /tmp/cobra-install.XXXXXX)"
+    info "Cloning https://github.com/${REPO}.git ..."
+    if ! git clone --depth 1 "https://github.com/${REPO}.git" "${TMP_DIR}/Cobra" 2>/dev/null; then
+        die "Failed to clone repository."
+    fi
+
+    info "Building Cobra from source..."
+    (cd "${TMP_DIR}/Cobra" && make build 2>/dev/null) || die "Build failed."
+
+    BINARY="${TMP_DIR}/Cobra/cli/bin/cobra"
+    if [ ! -f "$BINARY" ]; then
+        BINARY="${TMP_DIR}/Cobra/compiler/bin/cobrac"
+    fi
+    if [ ! -f "$BINARY" ]; then
+        die "Built binary not found."
+    fi
+    chmod +x "$BINARY"
+    ok "Built from source"
 }
 
 # ─── Download ────────────────────────────────────────────────────────────────
@@ -319,8 +347,12 @@ main() {
     detect_arch
     select_downloader
     resolve_version
-    download_release
-    extract_binary
+    if [ "${BUILD_FROM_SOURCE:-0}" = "1" ]; then
+        build_from_source
+    else
+        download_release
+        extract_binary
+    fi
     install_binary
     configure_path
     verify_installation
