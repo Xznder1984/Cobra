@@ -18,6 +18,7 @@ typedef enum {
     NODE_IMPL_BLOCK,
     NODE_TYPE_ALIAS,
     NODE_IMPORT,
+    NODE_USE_DECL,
     NODE_IF,
     NODE_WHILE,
     NODE_FOR,
@@ -188,6 +189,10 @@ struct Node {
             char *name;
             char *alias;
         } import;
+
+        struct {
+            char *name;
+        } use_decl;
 
         struct {
             Node *condition;

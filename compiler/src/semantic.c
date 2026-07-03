@@ -276,6 +276,7 @@ static int semantic_analyze_node(SemanticAnalyzer *sa, Node *node) {
         case NODE_TRAIT_DEF:
             return !sa->had_error;
         case NODE_IMPORT:
+        case NODE_USE_DECL:
             return !sa->had_error;
         case NODE_ASSIGN:
             if (node->data.assign.target)

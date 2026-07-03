@@ -19,6 +19,9 @@ Compiler *compiler_create(void) {
     c->optimize_level = 0;
     c->emit_ir = 0;
     c->verbose = 0;
+    c->use_python = 0;
+    c->use_cargo = 0;
+    c->project_dir = NULL;
     c->link_flags = NULL;
     c->link_flag_count = 0;
     c->link_flag_capacity = 0;
@@ -93,6 +96,25 @@ int compiler_compile(Compiler *c) {
         diag_print_all(c->diags);
     }
 
+    // Scan for use directives
+    if (ast && ast->type == NODE_MODULE) {
+        for (int i = 0; i < ast->data.module.statements.count; i++) {
+            Node *stmt = ast->data.module.statements.items[i];
+            if (stmt && stmt->type == NODE_USE_DECL) {
+                const char *name = stmt->data.use_decl.name;
+                if (name) {
+                    if (strcmp(name, "python") == 0) {
+                        c->use_python = 1;
+                        if (c->verbose) printf("  Detected: use python\n");
+                    } else if (strcmp(name, "cargo") == 0) {
+                        c->use_cargo = 1;
+                        if (c->verbose) printf("  Detected: use cargo\n");
+                    }
+                }
+            }
+        }
+    }
+
     // Phase 3: Semantic Analysis
     if (c->verbose) printf("Phase 3/5: Semantic Analysis...\n");
     SemanticAnalyzer *semantic = semantic_create(c->diags);
@@ -130,4 +152,93 @@ int compiler_compile(Compiler *c) {
     }
 
     return result;
+}
+
+const char **compiler_get_link_flags(Compiler *c, int *count) {
+    if (c->link_flag_count > 0) {
+        *count = c->link_flag_count;
+        return (const char **)c->link_flags;
+    }
+
+    if (c->use_python) {
+        FILE *fp = popen("python3-config --ldflags --embed 2>/dev/null || python3-config --ldflags 2>/dev/null", "r");
+        if (fp) {
+            char buf[4096] = {0};
+            if (fgets(buf, sizeof(buf), fp)) {
+                buf[strcspn(buf, "\n")] = 0;
+                char *token = strtok(buf, " \t");
+                while (token) {
+                    if (token[0] == '-' && (token[1] == 'l' || token[1] == 'L')) {
+                        if (c->link_flag_count >= c->link_flag_capacity) {
+                            c->link_flag_capacity = c->link_flag_capacity ? c->link_flag_capacity * 2 : 8;
+                            c->link_flags = realloc(c->link_flags, sizeof(char*) * c->link_flag_capacity);
+                        }
+                        c->link_flags[c->link_flag_count++] = strdup(token);
+                    }
+                    token = strtok(NULL, " \t");
+                }
+            }
+            pclose(fp);
+        } else {
+            if (c->verbose) printf("Warning: python3-config not found\n");
+            if (c->link_flag_count >= c->link_flag_capacity) {
+                c->link_flag_capacity = 8;
+                c->link_flags = malloc(sizeof(char*) * c->link_flag_capacity);
+            }
+            c->link_flags[c->link_flag_count++] = strdup("-lpython3");
+        }
+    }
+
+    if (c->use_cargo) {
+        const char *cargo_dir = c->project_dir ? c->project_dir : ".";
+        char cmd[4096];
+        snprintf(cmd, sizeof(cmd), "cd %s && cargo build --release 2>/dev/null", cargo_dir);
+        int build_result = system(cmd);
+        if (build_result != 0) {
+            if (c->verbose) printf("Warning: 'cargo build --release' failed (exit %d)\n", build_result);
+        }
+
+        char toml_path[4096];
+        snprintf(toml_path, sizeof(toml_path), "%s/Cargo.toml", cargo_dir);
+        FILE *fp = fopen(toml_path, "r");
+        if (fp) {
+            char line[1024];
+            char crate_name[256] = {0};
+            while (fgets(line, sizeof(line), fp)) {
+                if (strncmp(line, "name", 4) == 0) {
+                    char *eq = strchr(line, '=');
+                    if (eq) {
+                        char *start = eq + 1;
+                        while (*start == ' ' || *start == '"' || *start == '\'') start++;
+                        char *end = start;
+                        while (*end && *end != '"' && *end != '\'' && *end != '\n') end++;
+                        int len = end - start;
+                        if (len > 0 && len < 256) {
+                            strncpy(crate_name, start, len);
+                            crate_name[len] = 0;
+                        }
+                    }
+                    break;
+                }
+            }
+            fclose(fp);
+
+            if (crate_name[0]) {
+                if (c->link_flag_count + 2 > c->link_flag_capacity) {
+                    c->link_flag_capacity = c->link_flag_capacity ? c->link_flag_capacity * 2 : 8;
+                    c->link_flags = realloc(c->link_flags, sizeof(char*) * c->link_flag_capacity);
+                }
+                char flag[4096];
+                snprintf(flag, sizeof(flag), "-l%s", crate_name);
+                c->link_flags[c->link_flag_count++] = strdup(flag);
+                snprintf(flag, sizeof(flag), "-L%s/target/release", cargo_dir);
+                c->link_flags[c->link_flag_count++] = strdup(flag);
+            }
+        } else if (c->verbose) {
+            printf("Warning: Cargo.toml not found in '%s'\n", cargo_dir);
+        }
+    }
+
+    *count = c->link_flag_count;
+    return (const char **)c->link_flags;
 }

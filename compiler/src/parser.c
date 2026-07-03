@@ -433,6 +433,22 @@ static Node *parse_import(Parser *p) {
     return node;
 }
 
+static Node *parse_use_decl(Parser *p) {
+    Token tok = advance(p);
+    Node *node = node_create(NODE_USE_DECL, tok.line, tok.column);
+
+    if (check(p, TOK_IDENTIFIER)) {
+        Token name = advance(p);
+        node->data.use_decl.name = str_ndup(name.start, name.length);
+    } else {
+        diag_add(p->diags, DIAG_ERROR, tok.line, tok.column,
+                 "Expected 'python' or 'cargo' after 'use'");
+        p->had_error = 1;
+    }
+
+    return node;
+}
+
 static Node *parse_if_stmt(Parser *p) {
     Token tok = advance(p);
     Node *node = node_create(NODE_IF, tok.line, tok.column);
@@ -592,6 +608,7 @@ static Node *parse_stmt(Parser *p) {
         case TOK_ENUM: return parse_enum_def(p);
         case TOK_TRAIT: return parse_trait_def(p);
         case TOK_IMPORT: return parse_import(p);
+        case TOK_USE: return parse_use_decl(p);
         case TOK_IF: return parse_if_stmt(p);
         case TOK_WHILE: return parse_while_loop(p);
         case TOK_FOR: return parse_for_loop(p);

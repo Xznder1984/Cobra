@@ -194,6 +194,7 @@ static Type *tc_check_node(TypeChecker *tc, Node *node) {
         case NODE_ENUM_DEF:
         case NODE_TRAIT_DEF:
         case NODE_IMPORT:
+        case NODE_USE_DECL:
         case NODE_LET_DECL:
         case NODE_CONST_DECL:
         case NODE_VAR_DECL:
