@@ -164,14 +164,33 @@ build_from_source() {
     (cd "${TMP_DIR}/Cobra" && make build 2>/dev/null) || die "Build failed."
 
     BINARY="${TMP_DIR}/Cobra/cli/bin/cobra"
-    if [ ! -f "$BINARY" ]; then
-        BINARY="${TMP_DIR}/Cobra/compiler/bin/cobrac"
-    fi
-    if [ ! -f "$BINARY" ]; then
-        die "Built binary not found."
-    fi
-    chmod +x "$BINARY"
-    ok "Built from source"
+    COBRAC="${TMP_DIR}/Cobra/compiler/bin/cobrac"
+    RUNTIME="${TMP_DIR}/Cobra/runtime/libcobra_runtime.a"
+
+    for f in "$BINARY" "$COBRAC" "$RUNTIME"; do
+        if [ ! -f "$f" ]; then
+            die "Required file not found after build: ${f}"
+        fi
+    done
+
+    chmod +x "$BINARY" "$COBRAC"
+
+    # Install to LIB_DIR, symlink binaries into BIN_DIR
+    LIB_DIR="/usr/local/lib/cobra"
+    BIN_DIR="${INSTALL_DIR:-/usr/local/bin}"
+
+    mkdir -p "$LIB_DIR" "$BIN_DIR" 2>/dev/null || true
+
+    cp "$BINARY" "$LIB_DIR/cobra"
+    cp "$COBRAC" "$LIB_DIR/cobrac"
+    cp "$RUNTIME" "$LIB_DIR/libcobra_runtime.a"
+
+    ln -sf "$LIB_DIR/cobra" "$BIN_DIR/cobra" 2>/dev/null || cp "$LIB_DIR/cobra" "$BIN_DIR/cobra"
+    ln -sf "$LIB_DIR/cobrac" "$BIN_DIR/cobrac" 2>/dev/null || cp "$LIB_DIR/cobrac" "$BIN_DIR/cobrac"
+
+    # Clean up the clone
+    rm -rf "${TMP_DIR}"
+    ok "Built from source and installed to ${LIB_DIR}"
 }
 
 # ─── Download ────────────────────────────────────────────────────────────────
@@ -349,6 +368,7 @@ main() {
     resolve_version
     if [ "${BUILD_FROM_SOURCE:-0}" = "1" ]; then
         build_from_source
+        BINARY="${BIN_DIR}/cobra"
     else
         download_release
         extract_binary
