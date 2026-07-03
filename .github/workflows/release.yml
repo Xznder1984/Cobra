@@ -81,6 +81,7 @@ jobs:
         run: |
           cd vscode-extension
           npm install
+          npm run compile
 
       - name: Package extension
         run: |
