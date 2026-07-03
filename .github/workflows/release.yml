@@ -10,10 +10,16 @@ permissions:
 
 jobs:
   build:
-    name: Build ${{ matrix.os }}
+    name: Build ${{ matrix.target }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        include:
+          - os: ubuntu-latest
+            target: linux-x86_64
+          - os: macos-13
+            target: macos-x86_64
+          - os: macos-latest
+            target: macos-arm64
     runs-on: ${{ matrix.os }}
     outputs:
       version: ${{ steps.get_version.outputs.version }}
@@ -43,25 +49,25 @@ jobs:
         run: make -C runtime
 
       - name: Create dist directory
-        run: mkdir -p dist/cobra-${{ steps.get_version.outputs.version }}-${{ runner.os == 'Linux' && 'linux' || 'macos' }}-x86_64
+        run: mkdir -p dist/cobra-${{ steps.get_version.outputs.version }}-${{ matrix.target }}
 
       - name: Package binaries
         run: |
-          cp compiler/bin/cobrac dist/cobra-${{ steps.get_version.outputs.version }}-${{ runner.os == 'Linux' && 'linux' || 'macos' }}-x86_64/
-          cp cli/bin/cobra dist/cobra-${{ steps.get_version.outputs.version }}-${{ runner.os == 'Linux' && 'linux' || 'macos' }}-x86_64/
-          cp runtime/libcobra_runtime.a dist/cobra-${{ steps.get_version.outputs.version }}-${{ runner.os == 'Linux' && 'linux' || 'macos' }}-x86_64/
-          cp install.sh dist/cobra-${{ steps.get_version.outputs.version }}-${{ runner.os == 'Linux' && 'linux' || 'macos' }}-x86_64/
+          cp compiler/bin/cobrac dist/cobra-${{ steps.get_version.outputs.version }}-${{ matrix.target }}/
+          cp cli/bin/cobra dist/cobra-${{ steps.get_version.outputs.version }}-${{ matrix.target }}/
+          cp runtime/libcobra_runtime.a dist/cobra-${{ steps.get_version.outputs.version }}-${{ matrix.target }}/
+          cp install.sh dist/cobra-${{ steps.get_version.outputs.version }}-${{ matrix.target }}/
 
       - name: Archive binaries
         run: |
           cd dist
-          tar czf cobra-${{ steps.get_version.outputs.version }}-${{ runner.os == 'Linux' && 'linux' || 'macos' }}-x86_64.tar.gz cobra-${{ steps.get_version.outputs.version }}-${{ runner.os == 'Linux' && 'linux' || 'macos' }}-x86_64/
+          tar czf cobra-${{ steps.get_version.outputs.version }}-${{ matrix.target }}.tar.gz cobra-${{ steps.get_version.outputs.version }}-${{ matrix.target }}/
 
       - name: Upload binary archive
         uses: actions/upload-artifact@v4
         with:
-          name: cobra-${{ runner.os == 'Linux' && 'linux' || 'macos' }}-x86_64
-          path: dist/cobra-${{ steps.get_version.outputs.version }}-${{ runner.os == 'Linux' && 'linux' || 'macos' }}-x86_64.tar.gz
+          name: cobra-${{ matrix.target }}
+          path: dist/cobra-${{ steps.get_version.outputs.version }}-${{ matrix.target }}.tar.gz
 
   vsix:
     name: Build VS Code Extension
@@ -117,6 +123,7 @@ jobs:
           ### Downloads
           - **Linux (x86_64)**: cobra-${{ needs.build.outputs.version }}-linux-x86_64.tar.gz
           - **macOS (x86_64)**: cobra-${{ needs.build.outputs.version }}-macos-x86_64.tar.gz
+          - **macOS (ARM64)**: cobra-${{ needs.build.outputs.version }}-macos-arm64.tar.gz
           - **VS Code Extension**: cobra-lang.vsix
           EOF
 
@@ -130,4 +137,5 @@ jobs:
           prerelease: false
           files: |
             cobra-*-x86_64/cobra-*.tar.gz
+            cobra-*-arm64/cobra-*.tar.gz
             cobra-vscode-extension/cobra-lang.vsix
