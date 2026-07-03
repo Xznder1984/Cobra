@@ -24,24 +24,20 @@ install: build
 	cp cli/bin/cobra /usr/local/bin/
 	cp compiler/bin/cobrac /usr/local/bin/
 	cp runtime/libcobra_runtime.a /usr/local/lib/
-	mkdir -p /usr/local/lib/cobra
-	cp -r stdlib/* /usr/local/lib/cobra/
 	@echo "Installation complete."
 
 test:
-	@echo "Running tests..."
-	$(MAKE) -C tests test
+	@echo "No tests configured yet."
 
 benchmark:
-	@echo "Running benchmarks..."
-	$(MAKE) -C benchmarks benchmark
+	@echo "No benchmarks configured yet."
 
 clean:
 	$(MAKE) -C $(COMPILER_DIR) clean
 	$(MAKE) -C $(CLI_DIR) clean
 	$(MAKE) -C $(RUNTIME_DIR) clean
 	rm -rf examples/*/build
-	rm -rf tests/build
+	rm -rf tests/build 2>/dev/null || true
 
 docs:
 	@echo "Generating documentation..."

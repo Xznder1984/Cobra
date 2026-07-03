@@ -6,7 +6,7 @@
 
 **The Python-inspired language with C-level performance.**
 
-Cobra is a modern, systems-level programming language that combines the simplicity and readability of Python with the raw performance of C and Rust.
+Cobra is a modern, systems-level programming language that combines the simplicity and readability of Python with the raw performance of C.
 
 ```cobra
 fn main() {
@@ -16,18 +16,24 @@ fn main() {
 
 ## Features
 
-- **Pythonic Syntax** — Clean, indentation-based syntax that's easy to read and write
-- **Blazing Fast** — Compiled directly to native machine code via x86-64 assembly
-- **Memory Safe** — Optional memory safety guarantees
-- **Rich Type System** — Static typing with full type inference
-- **Zero-Cost Abstractions** — High-level constructs compile to optimal machine code
-- **Built-in Package Manager** — Download, manage, and publish packages
+- **Pythonic Syntax** — Clean, indentation-based syntax
+- **Native Compilation** — Compiled directly to x86-64 native executables
+- **Static Typing** — With full type inference
+- **FFI Support** — Call C libraries via `extern fn`, auto-bridge Python/Rust packages via `use python` / `use cargo`
+- **Built-in Package Manager** — `cobra new`, `build`, `run`, `test`, and more
 - **Cross-Platform** — macOS and Linux support
-- **Modern Concurrency** — Async/await, coroutines, and threads
+- **VS Code Extension** — Syntax highlighting, snippets, language support
 
 ## Quick Start
 
-### Install
+### Install via Homebrew
+
+```bash
+brew tap Xznder1984/cobra
+brew install cobra
+```
+
+### Install via Script
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/Xznder1984/Cobra/main/install.sh | sh
@@ -39,6 +45,7 @@ curl -fsSL https://raw.githubusercontent.com/Xznder1984/Cobra/main/install.sh | 
 git clone https://github.com/Xznder1984/Cobra.git
 cd Cobra
 make build
+sudo make install
 ```
 
 ### Create a Project
@@ -63,61 +70,6 @@ cobra build
 ./build/program
 ```
 
-## Examples
-
-### Fibonacci
-
-```cobra
-fn fibonacci(n: int) -> int {
-    if n <= 1 {
-        return n
-    }
-    return fibonacci(n - 1) + fibonacci(n - 2)
-}
-
-fn main() {
-    for i in 0..10 {
-        println("fib(" + i + ") = " + fibonacci(i))
-    }
-}
-```
-
-### Structs
-
-```cobra
-struct Person {
-    name: str
-    age: int
-}
-
-fn main() {
-    let person = Person{
-        name: "Alice",
-        age: 30
-    }
-    println(person.name)
-}
-```
-
-## Project Structure
-
-```
-cobra/
-├── compiler/        # Cobra compiler (C)
-├── cli/             # Command-line interface
-├── runtime/         # Runtime library
-├── stdlib/          # Standard library
-├── package-manager/ # Package manager
-├── vscode-extension/ # VS Code extension
-├── website/         # Official website
-├── branding/        # Logos and branding
-├── docs/            # Documentation
-├── examples/        # Example projects
-├── tests/           # Tests
-├── install.sh         # Installation script
-└── benchmarks/      # Performance benchmarks
-```
-
 ## CLI Commands
 
 | Command | Description |
@@ -135,14 +87,34 @@ cobra/
 | `cobra repl` | Interactive REPL |
 | `cobra doctor` | System check |
 
-## Performance
+## Status
 
-Cobra targets native performance that competes with C, Rust, and Zig through:
-- Ahead-of-time (AOT) compilation
-- LLVM-quality optimizations
-- Minimal runtime overhead
-- Zero-cost abstractions
-- Efficient memory management
+Cobra is in early development. Working features:
+- `print()`, `println()`, `print_int()`, `print_float()` built-ins
+- `let` variables, `if`/`else`, `while` loops
+- String, integer, boolean literals and binary ops
+- `extern fn` FFI (C ABI)
+- `use python <pkg>` — auto pip install + CPython bridge generation
+- `use cargo <crate>` — auto cargo build + C ABI bridge generation
+- `return` from functions
+
+Not yet implemented: `let mut` reassignment, `for` loops, user-defined function calls, structs, classes, arrays, lists, dicts, `break`/`continue`.
+
+## Project Structure
+
+```
+cobra/
+├── compiler/        # Cobra compiler (C)
+├── cli/             # Command-line interface
+├── runtime/         # Runtime library (libcobra_runtime.a)
+├── vscode-extension/ # VS Code extension
+├── website/         # Official website
+├── branding/        # Logos and branding
+├── docs/            # Documentation
+├── examples/        # Example projects
+├── install.sh       # Installation script
+└── Formula/         # Homebrew formula
+```
 
 ## Documentation
 
@@ -153,11 +125,11 @@ Full documentation is available in the [docs](docs/) directory:
 
 ## VS Code Extension
 
-Install the Cobra VS Code extension for syntax highlighting, code snippets, and language support.
+Install the Cobra VS Code extension from the [GitHub Releases](https://github.com/Xznder1984/Cobra/releases) page.
 
 ## Contributing
 
-Contributions are welcome! See our [roadmap](docs/roadmap.md) for planned features.
+Contributions are welcome! See the [roadmap](docs/roadmap.md) for planned features.
 
 ## License
 
@@ -166,4 +138,4 @@ MIT License — see [LICENSE](LICENSE) for details.
 ## Community
 
 - [GitHub](https://github.com/Xznder1984/Cobra)
-- Documentation: [https://cobra-lang.org](https://cobra-lang.org)
+- Website: [https://xznder1984.github.io/Cobra/](https://xznder1984.github.io/Cobra/)
