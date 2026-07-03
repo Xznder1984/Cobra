@@ -60,7 +60,8 @@ static void synchronize(Parser *p) {
             case TOK_IF: case TOK_WHILE: case TOK_FOR:
             case TOK_RETURN: case TOK_STRUCT: case TOK_CLASS:
             case TOK_ENUM: case TOK_TRAIT: case TOK_IMPORT:
-            case TOK_PUB: case TOK_DEDENT:
+            case TOK_EXTERN: case TOK_USE: case TOK_PUB:
+            case TOK_DEDENT:
                 return;
             default: advance(p);
         }
@@ -199,6 +200,11 @@ static Node *parse_fn_def(Parser *p, int is_extern) {
         }
     } else if (check(p, TOK_COLON)) {
         advance(p);
+        Node *fn_body = parse_block(p, 1);
+        node->data.fn_def.body = fn_body->data.block.statements;
+        free(fn_body);
+    } else if (check(p, TOK_NEWLINE) || check(p, TOK_INDENT)) {
+        // Indented block without colon (Python-style)
         Node *fn_body = parse_block(p, 1);
         node->data.fn_def.body = fn_body->data.block.statements;
         free(fn_body);

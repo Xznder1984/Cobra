@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/stat.h>
 
 #define COBRA_CLI_VERSION "0.1.0"
 
@@ -187,58 +188,175 @@ static int cmd_init(int argc, char *argv[]) {
     return 0;
 }
 
+static void append_link_flag(char *buf, size_t bufsz, const char *flag) {
+    size_t blen = strlen(buf);
+    if (blen + strlen(flag) + 2 < bufsz) {
+        strcat(buf, " ");
+        strcat(buf, flag);
+    }
+}
+
 static int cmd_build(int argc, char *argv[]) {
     printf("Building Cobra project...\n");
 
-    char link_flags[512] = "-lc";
-    for (int i = 2; i < argc; i++) {
-        if (strcmp(argv[i], "-l") == 0 && i + 1 < argc) {
-            strcat(link_flags, " -l");
-            strcat(link_flags, argv[++i]);
-        } else if (strncmp(argv[i], "-l", 2) == 0) {
-            strcat(link_flags, " ");
-            strcat(link_flags, argv[i]);
-        } else if (strcmp(argv[i], "-L") == 0 && i + 1 < argc) {
-            strcat(link_flags, " -L");
-            strcat(link_flags, argv[++i]);
-        } else if (strncmp(argv[i], "-L", 2) == 0) {
-            strcat(link_flags, " ");
-            strcat(link_flags, argv[i]);
+    char project_dir[1024] = ".";
+    for (int i = 0; i < argc; i++) {
+        if (strcmp(argv[i], "-C") == 0 && i + 1 < argc) {
+            strncpy(project_dir, argv[++i], sizeof(project_dir)-1);
         }
     }
 
-    int result = system("mkdir -p build");
+    char main_cb[1024];
+    snprintf(main_cb, sizeof(main_cb), "%s/src/main.cb", project_dir);
 
-    result = system("cobrac src/main.cb -o build/main.s 2>/dev/null");
+    struct stat st;
+    if (stat(main_cb, &st) != 0) {
+        snprintf(main_cb, sizeof(main_cb), "src/main.cb");
+        if (stat(main_cb, &st) != 0) {
+            snprintf(main_cb, sizeof(main_cb), "main.cb");
+            if (stat(main_cb, &st) != 0) {
+                printf("Error: src/main.cb not found\n");
+                return 1;
+            }
+        }
+    }
+
+    char bridge_dir[1024];
+    snprintf(bridge_dir, sizeof(bridge_dir), "%s/cobra-bridge", project_dir);
+    char build_dir[1024];
+    snprintf(build_dir, sizeof(build_dir), "%s/build", project_dir);
+
+    char mkdir_cmd[2048];
+    snprintf(mkdir_cmd, sizeof(mkdir_cmd), "mkdir -p %s %s", build_dir, bridge_dir);
+    system(mkdir_cmd);
+
+    char cobrac_cmd[2048];
+    snprintf(cobrac_cmd, sizeof(cobrac_cmd),
+             "cobrac %s -o %s/main.s -p %s 2>/dev/null",
+             main_cb, build_dir, project_dir);
+    int result = system(cobrac_cmd);
     if (result != 0) {
         printf("Compilation error.\n");
         return 1;
     }
 
-    result = system("clang -c build/main.s -o build/main.o 2>/dev/null");
+    char s_path[1024];
+    snprintf(s_path, sizeof(s_path), "%s/main.s", build_dir);
+    char o_main_path[1024];
+    snprintf(o_main_path, sizeof(o_main_path), "%s/main.o", build_dir);
+    char asm_cmd[2048];
+    snprintf(asm_cmd, sizeof(asm_cmd), "clang -c %s -o %s 2>/dev/null", s_path, o_main_path);
+    result = system(asm_cmd);
     if (result != 0) {
         printf("Assembly error.\n");
         return 1;
     }
 
-    char link_cmd[1024];
+    char bridge_obj_list[4096] = "";
+    char find_cmd[4096];
+    snprintf(find_cmd, sizeof(find_cmd),
+             "find %s -name '*.c' 2>/dev/null", bridge_dir);
+    FILE *fp = popen(find_cmd, "r");
+    if (fp) {
+        char cfile[1024];
+        while (fgets(cfile, sizeof(cfile), fp)) {
+            cfile[strcspn(cfile, "\n")] = 0;
+            if (strlen(cfile) == 0) continue;
+
+            char objname[1024];
+            char basebuf[256];
+            char *base = strrchr(cfile, '/');
+            base = base ? base + 1 : cfile;
+            strncpy(basebuf, base, sizeof(basebuf)-1);
+            basebuf[sizeof(basebuf)-1] = 0;
+            char *dot = strrchr(basebuf, '.');
+            if (dot) *dot = 0;
+
+            snprintf(objname, sizeof(objname), "%s/%s_bridge.o", build_dir, basebuf);
+
+            char cc_cmd[4096];
+            snprintf(cc_cmd, sizeof(cc_cmd),
+                     "clang -c %s -o %s $(python3-config --includes 2>/dev/null) 2>/dev/null",
+                     cfile, objname);
+            int br = system(cc_cmd);
+            if (br == 0) {
+                append_link_flag(bridge_obj_list, sizeof(bridge_obj_list), objname);
+            }
+        }
+        pclose(fp);
+    }
+
+    char link_flags[4096] = "-lc";
+
+    // Auto-add Python link flags if bridge files exist
+    if (bridge_obj_list[0]) {
+        FILE *pfp = popen("python3-config --ldflags --embed 2>/dev/null || python3-config --ldflags 2>/dev/null", "r");
+        if (pfp) {
+            char pyflags[4096] = {0};
+            if (fgets(pyflags, sizeof(pyflags), pfp)) {
+                pyflags[strcspn(pyflags, "\n")] = 0;
+                append_link_flag(link_flags, sizeof(link_flags), pyflags);
+            }
+            pclose(pfp);
+        } else {
+            append_link_flag(link_flags, sizeof(link_flags), "-lpython3");
+        }
+    }
+
+    for (int i = 0; i < argc; i++) {
+        if (strcmp(argv[i], "-l") == 0 && i + 1 < argc) {
+            append_link_flag(link_flags, sizeof(link_flags), "-l");
+            strncat(link_flags, argv[++i], sizeof(link_flags) - strlen(link_flags) - 1);
+        } else if (strncmp(argv[i], "-l", 2) == 0) {
+            append_link_flag(link_flags, sizeof(link_flags), argv[i]);
+        } else if (strcmp(argv[i], "-L") == 0 && i + 1 < argc) {
+            append_link_flag(link_flags, sizeof(link_flags), "-L");
+            strncat(link_flags, argv[++i], sizeof(link_flags) - strlen(link_flags) - 1);
+        } else if (strncmp(argv[i], "-L", 2) == 0) {
+            append_link_flag(link_flags, sizeof(link_flags), argv[i]);
+        }
+    }
+
+    char runtime_path[1024];
+    snprintf(runtime_path, sizeof(runtime_path),
+             "%s/../runtime/libcobra_runtime.a", project_dir);
+
+    char link_cmd[4096];
     snprintf(link_cmd, sizeof(link_cmd),
-             "clang build/main.o -o build/program %s 2>/dev/null", link_flags);
+             "clang %s/main.o %s -o %s/program %s %s 2>/dev/null",
+             build_dir, bridge_obj_list, build_dir, runtime_path, link_flags);
     result = system(link_cmd);
+
+    if (result != 0) {
+        snprintf(link_cmd, sizeof(link_cmd),
+                 "clang %s/main.o %s -o %s/program %s %s 2>/dev/null",
+                 build_dir, bridge_obj_list, build_dir,
+                 "runtime/libcobra_runtime.a", link_flags);
+        result = system(link_cmd);
+    }
+
     if (result != 0) {
         printf("Linking error.\n");
         return 1;
     }
 
-    printf("Build successful. Output: build/program\n");
+    printf("Build successful. Output: %s/program\n", build_dir);
     return 0;
 }
 
 static int cmd_run(int argc, char *argv[]) {
+    char project_dir[1024] = ".";
+    for (int i = 0; i < argc; i++) {
+        if (strcmp(argv[i], "-C") == 0 && i + 1 < argc) {
+            strncpy(project_dir, argv[++i], sizeof(project_dir)-1);
+        }
+    }
     int result = cmd_build(argc, argv);
     if (result != 0) return result;
     printf("Running...\n");
-    return system("./build/program");
+    char run_cmd[2048];
+    snprintf(run_cmd, sizeof(run_cmd), "%s/build/program", project_dir);
+    return system(run_cmd);
 }
 
 static int cmd_test(int argc, char *argv[]) {

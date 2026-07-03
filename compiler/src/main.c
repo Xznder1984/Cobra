@@ -8,6 +8,7 @@ static void print_usage(void) {
     printf("Usage: cobrac [options] <source.cb>\n");
     printf("Options:\n");
     printf("  -o <file>    Set output file\n");
+    printf("  -p <dir>     Set project directory\n");
     printf("  -O<level>    Set optimization level (0-3)\n");
     printf("  -S           Generate assembly only\n");
     printf("  -v           Verbose output\n");
@@ -20,6 +21,7 @@ static void print_usage(void) {
 int main(int argc, char *argv[]) {
     const char *source_path = NULL;
     const char *output_path = NULL;
+    const char *project_dir = NULL;
     int optimize = 0;
     int verbose = 0;
 
@@ -40,13 +42,16 @@ int main(int argc, char *argv[]) {
             output_path = argv[++i];
             continue;
         }
+        if (strcmp(argv[i], "-p") == 0 && i + 1 < argc) {
+            project_dir = argv[++i];
+            continue;
+        }
         if (argv[i][0] == '-' && argv[i][1] == 'O') {
             optimize = atoi(argv[i] + 2);
             continue;
         }
         if (strcmp(argv[i], "-l") == 0 || strcmp(argv[i], "-L") == 0) {
             if (i + 1 < argc) {
-                // -l and -L with space separator: consume both parts
                 i++;
             }
             continue;
@@ -67,6 +72,9 @@ int main(int argc, char *argv[]) {
     Compiler *compiler = compiler_create();
     compiler->optimize_level = optimize;
     compiler->verbose = verbose;
+    if (project_dir) {
+        compiler->project_dir = strdup(project_dir);
+    }
 
     int result = compiler_compile_file(compiler, source_path, output_path);
 

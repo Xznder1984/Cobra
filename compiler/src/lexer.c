@@ -423,7 +423,14 @@ Token lexer_next(Lexer *l) {
         case ':': t = make_token(l, TOK_COLON); break;
         case '@': t = make_token(l, TOK_AT); break;
         case '?': t = make_token(l, TOK_QUESTION); break;
-        case '_': t = make_token(l, TOK_UNDERSCORE); break;
+        case '_':
+            // If followed by more identifier chars, treat as identifier
+            if (isalnum(peek(l, 0)) || peek(l, 0) == '_') {
+                t = read_identifier(l);
+                break;
+            }
+            t = make_token(l, TOK_UNDERSCORE);
+            break;
 
         case '+':
             if (peek(l, 0) == '=') { advance(l); t = make_token(l, TOK_PLUS_EQ); }
