@@ -1,9 +1,9 @@
 #!/bin/sh
 # Cobra Programming Language Installer
-# Usage: curl -fsSL https://cobra-lang.org/install.sh | sh
+# Usage: curl -fsSL https://raw.githubusercontent.com/Xznder1984/Cobra/main/installer/install.sh | sh
 set -eu
 
-REPO="cobra-lang/cobra"
+REPO="Xznder1984/Cobra"
 VERSION="${COBRA_VERSION:-latest}"
 INSTALL_DIR="${COBRA_INSTALL_DIR:-}"
 BANNER_COLOR="\033[38;5;46m"
@@ -17,7 +17,7 @@ BLUE="\033[34m"
 # ─── Help / Usage ────────────────────────────────────────────────────────────
 usage() {
     cat <<'EOF'
-Usage: curl -fsSL https://cobra-lang.org/install.sh | sh [flags]
+Usage: curl -fsSL https://raw.githubusercontent.com/Xznder1984/Cobra/main/installer/install.sh | sh [flags] [flags]
 
 Flags (passed as environment variables):
   COBRA_VERSION=<version>    Install a specific version (default: latest)
@@ -127,7 +127,13 @@ resolve_version() {
         TAG="$($DOWNLOADER "https://api.github.com/repos/${REPO}/releases/latest" 2>/dev/null \
             | sed -n 's/.*"tag_name": *"\([^"]*\)".*/\1/p' 2>/dev/null || true)"
         if [ -z "$TAG" ]; then
-            die "Failed to fetch latest version from GitHub. Check your network or set COBRA_VERSION explicitly."
+            err "No GitHub releases found for ${REPO}."
+            err "The project is still in development and no pre-built binaries are available yet."
+            err ""
+            err "To build from source:"
+            err "  git clone https://github.com/${REPO}.git"
+            err "  cd Cobra && make build"
+            die "Install via source build instead."
         fi
         VERSION="$TAG"
         ok "Latest version: ${VERSION}"
