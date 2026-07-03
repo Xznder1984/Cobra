@@ -29,8 +29,7 @@ fn main() {
 ### Install via Homebrew
 
 ```bash
-brew tap Xznder1984/cobra
-brew install cobra
+brew install Xznder1984/cobra/cobra
 ```
 
 ### Install via Script
