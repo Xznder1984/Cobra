@@ -35,6 +35,7 @@ static Type *tc_check_binary(TypeChecker *tc, Node *node) {
             return type_create(TYPE_BOOL);
 
         case TOK_AND: case TOK_OR:
+        case TOK_AMPERSAND_AMPERSAND: case TOK_PIPE_PIPE:
             return type_create(TYPE_BOOL);
 
         default:
@@ -197,6 +198,12 @@ static Type *tc_check_node(TypeChecker *tc, Node *node) {
             return node->data.fn_def.return_type
                 ? type_clone(node->data.fn_def.return_type)
                 : type_create(TYPE_VOID);
+
+        case NODE_MODULE:
+            for (int i = 0; i < node->data.module.statements.count; i++) {
+                tc_check_node(tc, node->data.module.statements.items[i]);
+            }
+            return NULL;
 
         case NODE_STRUCT_DEF:
         case NODE_CLASS_DEF:

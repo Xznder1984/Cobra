@@ -605,6 +605,8 @@ int compiler_compile(Compiler *c) {
         diag_print_all(c->diags);
     }
 
+    tc_free(tc);
+
     if (c->verbose) printf("Code Generation...\n");
     CodeGenerator *cg = cg_create(c->diags);
     int result = cg_generate(cg, ast, c->output_path);
@@ -619,7 +621,6 @@ int compiler_compile(Compiler *c) {
     if (has_errors) result = 0;
 
     cg_free(cg);
-    tc_free(tc);
     semantic_free(semantic);
     node_free(ast);
     parser_free(parser);

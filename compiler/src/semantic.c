@@ -239,7 +239,8 @@ static int semantic_analyze_node(SemanticAnalyzer *sa, Node *node) {
             if (node->data.assign.target &&
                 node->data.assign.target->type == NODE_IDENTIFIER) {
                 const char *name = node->data.assign.target->data.identifier.name;
-                if (!scope_lookup(sa, name)) {
+                Symbol *sym = scope_lookup(sa, name);
+                if (!sym) {
                     scope_add_symbol(sa, name, NULL, 1, 0, node);
                 }
             }

@@ -17,6 +17,7 @@ typedef struct {
     int string_capacity;
     char **var_names;
     int *var_offsets;
+    int *var_types;
     int var_count;
     int var_capacity;
     int current_fn_var_base;

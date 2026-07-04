@@ -18,6 +18,7 @@ CodeGenerator *cg_create(DiagnosticList *diags) {
     cg->str_label_count = 0;
     cg->var_names = NULL;
     cg->var_offsets = NULL;
+    cg->var_types = NULL;
     cg->var_count = 0;
     cg->var_capacity = 0;
     cg->current_fn_var_base = 16;
@@ -34,6 +35,7 @@ void cg_free(CodeGenerator *cg) {
         for (int i = 0; i < cg->var_count; i++) free(cg->var_names[i]);
         free(cg->var_names);
         free(cg->var_offsets);
+        free(cg->var_types);
         free(cg);
     }
 }
@@ -53,10 +55,12 @@ static int cg_add_var(CodeGenerator *cg, const char *name) {
         cg->var_capacity = cg->var_capacity ? cg->var_capacity * 2 : 8;
         cg->var_names = realloc(cg->var_names, sizeof(char*) * cg->var_capacity);
         cg->var_offsets = realloc(cg->var_offsets, sizeof(int) * cg->var_capacity);
+        cg->var_types = realloc(cg->var_types, sizeof(int) * cg->var_capacity);
     }
     int offset = cg->current_fn_var_base + cg->var_count * 8;
     cg->var_names[cg->var_count] = strdup(name);
     cg->var_offsets[cg->var_count] = offset;
+    cg->var_types[cg->var_count] = TYPE_INT;
     return cg->var_count++;
 }
 
@@ -87,7 +91,9 @@ static void cg_pre_register_vars(CodeGenerator *cg, Node *node) {
             }
         }
     } else if (node->type == NODE_FOR) {
-        cg_add_var(cg, node->data.for_loop.var_name);
+        if (cg_find_var(cg, node->data.for_loop.var_name) < 0) {
+            cg_add_var(cg, node->data.for_loop.var_name);
+        }
     } else if (node->type == NODE_IF) {
         if (node->data.if_stmt.then_block)
             cg_pre_register_vars(cg, node->data.if_stmt.then_block);
@@ -214,8 +220,17 @@ static int cg_gen_for(CodeGenerator *cg, Node *node) {
     int label_end = cg->label_count++;
 
     if (iterable && iterable->type == NODE_RANGE) {
-        cg_add_var(cg, var_name);
-        int var_offset = cg->var_offsets[cg->var_count - 1];
+        int var_offset = cg_find_var(cg, var_name);
+        int var_idx = -1;
+        if (var_offset < 0) {
+            var_idx = cg_add_var(cg, var_name);
+            var_offset = cg->var_offsets[var_idx];
+        } else {
+            for (int vi = cg->var_count - 1; vi >= 0; vi--) {
+                if (strcmp(cg->var_names[vi], var_name) == 0) { var_idx = vi; break; }
+            }
+        }
+        if (var_idx >= 0) cg->var_types[var_idx] = TYPE_INT;
 
         cg_gen_expr(cg, iterable->data.range.start);
         fprintf(cg->output, "    mov [rbp - %d], rax\n", var_offset);
@@ -292,6 +307,11 @@ static int cg_gen_binary(CodeGenerator *cg, Node *node) {
             fprintf(cg->output, "    xor rdx, rdx\n");
             fprintf(cg->output, "    div rcx\n");
             break;
+        case TOK_PERCENT:
+            fprintf(cg->output, "    xor rdx, rdx\n");
+            fprintf(cg->output, "    div rcx\n");
+            fprintf(cg->output, "    mov rax, rdx\n");
+            break;
         case TOK_EQ_EQ:
             fprintf(cg->output, "    cmp rax, rcx\n");
             fprintf(cg->output, "    sete al\n");
@@ -317,10 +337,23 @@ static int cg_gen_binary(CodeGenerator *cg, Node *node) {
             fprintf(cg->output, "    setle al\n");
             fprintf(cg->output, "    movzx rax, al\n");
             break;
-        case TOK_GT_EQ:
-            fprintf(cg->output, "    cmp rax, rcx\n");
-            fprintf(cg->output, "    setge al\n");
+        case TOK_AND: case TOK_AMPERSAND_AMPERSAND:
+            fprintf(cg->output, "    cmp rax, 0\n");
+            fprintf(cg->output, "    setne al\n");
             fprintf(cg->output, "    movzx rax, al\n");
+            fprintf(cg->output, "    cmp rcx, 0\n");
+            fprintf(cg->output, "    setne cl\n");
+            fprintf(cg->output, "    movzx rcx, cl\n");
+            fprintf(cg->output, "    and rax, rcx\n");
+            break;
+        case TOK_OR: case TOK_PIPE_PIPE:
+            fprintf(cg->output, "    cmp rax, 0\n");
+            fprintf(cg->output, "    setne al\n");
+            fprintf(cg->output, "    movzx rax, al\n");
+            fprintf(cg->output, "    cmp rcx, 0\n");
+            fprintf(cg->output, "    setne cl\n");
+            fprintf(cg->output, "    movzx rcx, cl\n");
+            fprintf(cg->output, "    or rax, rcx\n");
             break;
         default:
             fprintf(cg->output, "    # unknown binary op\n");
@@ -376,7 +409,20 @@ static int cg_gen_call(CodeGenerator *cg, Node *node) {
                 }
                 cg_gen_expr(cg, node->data.call.args.items[i]);
                 Node *arg = node->data.call.args.items[i];
-                const char *tname = cg_type_name(arg->expr_type);
+                int arg_type_kind = arg->expr_type ? arg->expr_type->kind : TYPE_INT;
+                if (arg->type == NODE_IDENTIFIER) {
+                    for (int vi = cg->var_count - 1; vi >= 0; vi--) {
+                        if (strcmp(cg->var_names[vi], arg->data.identifier.name) == 0) {
+                            arg_type_kind = cg->var_types[vi];
+                            break;
+                        }
+                    }
+                }
+
+                const char *tname = "int";
+                if (arg_type_kind == TYPE_BOOL) tname = "bool";
+                else if (arg_type_kind == TYPE_F64 || arg_type_kind == TYPE_F32) tname = "float";
+                else if (arg_type_kind == TYPE_NAMED && arg->expr_type && arg->expr_type->name && strcmp(arg->expr_type->name, "str") == 0) tname = "str";
                 if (strcmp(tname, "str") == 0) {
                     fprintf(cg->output, "    mov rdi, rax\n");
                     fprintf(cg->output, "    call _cobra_print_str\n");
@@ -473,13 +519,22 @@ static int cg_gen_expr(CodeGenerator *cg, Node *node) {
         case NODE_ASSIGN: {
             Node *target = node->data.assign.target;
             if (target && target->type == NODE_IDENTIFIER) {
-                int offset = cg_find_var(cg, target->data.identifier.name);
+                const char *vname = target->data.identifier.name;
+                int offset = cg_find_var(cg, vname);
+                int idx = -1;
                 if (offset < 0) {
-                    int idx = cg_add_var(cg, target->data.identifier.name);
+                    idx = cg_add_var(cg, vname);
                     offset = cg->var_offsets[idx];
+                } else {
+                    for (int i = cg->var_count - 1; i >= 0; i--) {
+                        if (strcmp(cg->var_names[i], vname) == 0) { idx = i; break; }
+                    }
                 }
                 cg_gen_expr(cg, node->data.assign.value);
                 fprintf(cg->output, "    mov [rbp - %d], rax\n", offset);
+                if (idx >= 0 && node->data.assign.value && node->data.assign.value->expr_type) {
+                    cg->var_types[idx] = node->data.assign.value->expr_type->kind;
+                }
             }
             return 1;
         }
