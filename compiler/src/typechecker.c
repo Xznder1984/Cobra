@@ -69,26 +69,35 @@ static Type *tc_check_node(TypeChecker *tc, Node *node) {
 
     switch (node->type) {
         case NODE_INT_LITERAL:
-            return type_create(TYPE_INT);
+            node->expr_type = type_create(TYPE_INT);
+            return type_clone(node->expr_type);
         case NODE_FLOAT_LITERAL:
-            return type_create(TYPE_F64);
+            node->expr_type = type_create(TYPE_F64);
+            return type_clone(node->expr_type);
         case NODE_STR_LITERAL:
-            return type_create_named("str");
+            node->expr_type = type_create_named("str");
+            return type_clone(node->expr_type);
         case NODE_BOOL_LITERAL:
-            return type_create(TYPE_BOOL);
+            node->expr_type = type_create(TYPE_BOOL);
+            return type_clone(node->expr_type);
         case NODE_NIL_LITERAL:
-            return type_create(TYPE_VOID);
+            node->expr_type = type_create(TYPE_VOID);
+            return type_clone(node->expr_type);
 
         case NODE_IDENTIFIER:
             if (node->expr_type) return type_clone(node->expr_type);
-            return type_create(TYPE_INT);
+            node->expr_type = type_create(TYPE_INT);
+            return type_clone(node->expr_type);
 
         case NODE_BINARY:
-            return tc_check_binary(tc, node);
+            node->expr_type = tc_check_binary(tc, node);
+            return type_clone(node->expr_type);
         case NODE_UNARY:
-            return tc_check_unary(tc, node);
+            node->expr_type = tc_check_unary(tc, node);
+            return type_clone(node->expr_type);
         case NODE_CALL:
-            return tc_check_call(tc, node);
+            node->expr_type = tc_check_call(tc, node);
+            return type_clone(node->expr_type);
 
         case NODE_IF:
             if (node->data.if_stmt.condition)

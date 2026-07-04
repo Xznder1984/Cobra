@@ -1,22 +1,22 @@
 // Loop examples in Cobra
 
 fn main():
-    println("For loop 1..5:")
+    print("For loop 1..5:")
     for i in 1..6:
-        print_int(i)
+        print(i)
 
-    println("Done1")
+    print("Done1")
 
-    println("For loop 1..=5:")
+    print("For loop 1..=5:")
     for i in 1..=5:
-        print_int(i)
+        print(i)
 
-    println("Done2")
+    print("Done2")
 
-    println("While loop with mut:")
-    let mut count = 0
+    print("While loop:")
+    count = 0
     while count < 5:
-        print_int(count)
+        print(count)
         count = count + 1
 
-    println("Done3")
+    print("Done3")

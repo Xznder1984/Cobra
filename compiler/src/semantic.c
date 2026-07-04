@@ -235,6 +235,19 @@ static int semantic_analyze_node(SemanticAnalyzer *sa, Node *node) {
         case NODE_LET_DECL:
         case NODE_VAR_DECL:
             return semantic_analyze_let_decl(sa, node);
+        case NODE_ASSIGN:
+            if (node->data.assign.target &&
+                node->data.assign.target->type == NODE_IDENTIFIER) {
+                const char *name = node->data.assign.target->data.identifier.name;
+                if (!scope_lookup(sa, name)) {
+                    scope_add_symbol(sa, name, NULL, 1, 0, node);
+                }
+            }
+            if (node->data.assign.target)
+                semantic_analyze_node(sa, node->data.assign.target);
+            if (node->data.assign.value)
+                semantic_analyze_node(sa, node->data.assign.value);
+            return !sa->had_error;
         case NODE_CONST_DECL:
             return semantic_analyze_const_decl(sa, node);
         case NODE_IDENTIFIER:
@@ -278,12 +291,7 @@ static int semantic_analyze_node(SemanticAnalyzer *sa, Node *node) {
         case NODE_IMPORT:
         case NODE_USE_DECL:
             return !sa->had_error;
-        case NODE_ASSIGN:
-            if (node->data.assign.target)
-                semantic_analyze_node(sa, node->data.assign.target);
-            if (node->data.assign.value)
-                semantic_analyze_node(sa, node->data.assign.value);
-            return !sa->had_error;
+
         case NODE_STRUCT_INIT:
             for (int i = 0; i < node->data.struct_init.fields.count; i++) {
                 semantic_analyze_node(sa, node->data.struct_init.fields.items[i]);

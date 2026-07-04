@@ -56,7 +56,7 @@ static void synchronize(Parser *p) {
         if (peek(p).type == TOK_EOF) return;
         if (peek(p).type == TOK_NEWLINE) { advance(p); return; }
         switch (peek(p).type) {
-            case TOK_FN: case TOK_LET: case TOK_CONST:
+            case TOK_FN: case TOK_CONST:
             case TOK_IF: case TOK_WHILE: case TOK_FOR:
             case TOK_RETURN: case TOK_STRUCT: case TOK_CLASS:
             case TOK_ENUM: case TOK_TRAIT: case TOK_IMPORT:
@@ -224,33 +224,6 @@ static Node *parse_fn_def(Parser *p, int is_extern) {
             else if (match(p, TOK_RBRACE)) depth--;
             else advance(p);
         }
-    }
-
-    return node;
-}
-
-static Node *parse_let_decl(Parser *p) {
-    Token let_tok = advance(p);
-    int is_mut = match(p, TOK_MUT);
-    Token name_tok = consume(p, TOK_IDENTIFIER, "Expected variable name");
-    if (name_tok.type == TOK_ERROR) return NULL;
-
-    Node *node = node_create(NODE_LET_DECL, let_tok.line, let_tok.column);
-    node->data.let_decl.name = str_ndup(name_tok.start, name_tok.length);
-    node->data.let_decl.is_mut = is_mut;
-    node->data.let_decl.type = NULL;
-    node->data.let_decl.value = NULL;
-
-    if (match(p, TOK_COLON)) {
-        if (check(p, TOK_IDENTIFIER)) {
-            Token tname = advance(p);
-            node->data.let_decl.type = type_create_named(
-                str_ndup(tname.start, tname.length));
-        }
-    }
-
-    if (match(p, TOK_EQ)) {
-        node->data.let_decl.value = parse_expr(p);
     }
 
     return node;
@@ -625,7 +598,18 @@ static Node *parse_stmt(Parser *p) {
                      "Expected 'fn' after 'extern'");
             p->had_error = 1;
             return NULL;
-        case TOK_LET: return parse_let_decl(p);
+        case TOK_LET:
+            advance(p);
+            match(p, TOK_MUT);
+            {
+                Node *expr = parse_expr(p);
+                if (expr) {
+                    Node *stmt = node_create(NODE_EXPR_STMT, expr->line, expr->column);
+                    stmt->data.expr_stmt.expr = expr;
+                    return stmt;
+                }
+                return NULL;
+            }
         case TOK_CONST: return parse_const_decl(p);
         case TOK_STRUCT: return parse_struct_def(p);
         case TOK_CLASS: return parse_class_def(p);

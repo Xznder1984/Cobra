@@ -140,6 +140,10 @@ void *cobra_dict_get(CobraDict *d, const char *key) {
 }
 
 void cobra_print(const char *s) {
+    printf("%s\n", s ? s : "");
+}
+
+void cobra_print_str(const char *s) {
     if (s) printf("%s", s);
 }
 
@@ -149,6 +153,18 @@ void cobra_print_int(long long n) {
 
 void cobra_print_float(double f) {
     printf("%g", f);
+}
+
+void cobra_print_bool(int b) {
+    printf("%s", b ? "true" : "false");
+}
+
+void cobra_print_space(void) {
+    printf(" ");
+}
+
+void cobra_print_nl(void) {
+    printf("\n");
 }
 
 void cobra_println(const char *s) {

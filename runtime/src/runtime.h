@@ -42,8 +42,12 @@ void cobra_dict_set(CobraDict *d, const char *key, void *value);
 void *cobra_dict_get(CobraDict *d, const char *key);
 
 void cobra_print(const char *s);
+void cobra_print_str(const char *s);
 void cobra_print_int(long long n);
 void cobra_print_float(double f);
+void cobra_print_bool(int b);
+void cobra_print_space(void);
+void cobra_print_nl(void);
 void cobra_println(const char *s);
 
 void *cobra_alloc(size_t size);

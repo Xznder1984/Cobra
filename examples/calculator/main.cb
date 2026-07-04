@@ -2,21 +2,10 @@
 // A basic arithmetic calculator
 
 fn main():
-    let x = 42
-    let y = 7
+    x = 42
+    y = 7
     
-    print("x + y = ")
-    print_int(x + y)
-    println()
-    
-    print("x - y = ")
-    print_int(x - y)
-    println()
-    
-    print("x * y = ")
-    print_int(x * y)
-    println()
-    
-    print("x / y = ")
-    print_int(x / y)
-    println()
+    print("x + y =", x + y)
+    print("x - y =", x - y)
+    print("x * y =", x * y)
+    print("x / y =", x / y)

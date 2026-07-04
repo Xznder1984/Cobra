@@ -65,24 +65,40 @@ static void cg_reset_vars(CodeGenerator *cg) {
     cg->var_count = 0;
 }
 
-static int cg_count_let_decls(Node *node) {
-    int count = 0;
-    if (!node) return 0;
-    if (node->type == NODE_LET_DECL) return 1;
-    if (node->type == NODE_FOR) return 1;
+static void cg_pre_register_vars(CodeGenerator *cg, Node *node) {
+    if (!node) return;
     if (node->type == NODE_BLOCK) {
         for (int i = 0; i < node->data.block.statements.count; i++) {
-            count += cg_count_let_decls(node->data.block.statements.items[i]);
+            cg_pre_register_vars(cg, node->data.block.statements.items[i]);
         }
-        return count;
-    }
-    if (node->type == NODE_FN_DEF) {
+    } else if (node->type == NODE_FN_DEF) {
         for (int i = 0; i < node->data.fn_def.body.count; i++) {
-            count += cg_count_let_decls(node->data.fn_def.body.items[i]);
+            cg_pre_register_vars(cg, node->data.fn_def.body.items[i]);
         }
-        return count;
+    } else if (node->type == NODE_EXPR_STMT) {
+        if (node->data.expr_stmt.expr)
+            cg_pre_register_vars(cg, node->data.expr_stmt.expr);
+    } else if (node->type == NODE_ASSIGN) {
+        if (node->data.assign.target &&
+            node->data.assign.target->type == NODE_IDENTIFIER) {
+            const char *name = node->data.assign.target->data.identifier.name;
+            if (cg_find_var(cg, name) < 0) {
+                cg_add_var(cg, name);
+            }
+        }
+    } else if (node->type == NODE_FOR) {
+        cg_add_var(cg, node->data.for_loop.var_name);
+    } else if (node->type == NODE_IF) {
+        if (node->data.if_stmt.then_block)
+            cg_pre_register_vars(cg, node->data.if_stmt.then_block);
+        if (node->data.if_stmt.elif_chain)
+            cg_pre_register_vars(cg, node->data.if_stmt.elif_chain);
+        if (node->data.if_stmt.else_block)
+            cg_pre_register_vars(cg, node->data.if_stmt.else_block);
+    } else if (node->type == NODE_WHILE) {
+        if (node->data.while_loop.body)
+            cg_pre_register_vars(cg, node->data.while_loop.body);
     }
-    return 0;
 }
 
 static int cg_gen_module(CodeGenerator *cg, Node *node) {
@@ -101,8 +117,8 @@ static int cg_gen_fn_def(CodeGenerator *cg, Node *node) {
     cg_reset_vars(cg);
     cg->fn_end_label = cg->label_count++;
 
-    int let_count = cg_count_let_decls(node);
-    int stack_size = 16 + 8 * let_count;
+    cg_pre_register_vars(cg, node);
+    int stack_size = 16 + 8 * cg->var_count;
     if (stack_size % 16 != 0) stack_size += 8;
 
     fprintf(cg->output, "\n# Function %s\n", node->data.fn_def.name);
@@ -331,22 +347,50 @@ static int cg_gen_unary(CodeGenerator *cg, Node *node) {
     return 1;
 }
 
+static const char *cg_type_name(Type *t) {
+    if (!t) return "int";
+    switch (t->kind) {
+        case TYPE_INT: case TYPE_I8: case TYPE_I16: case TYPE_I32: case TYPE_I64:
+        case TYPE_U8: case TYPE_U16: case TYPE_U32: case TYPE_U64:
+            return "int";
+        case TYPE_F64: case TYPE_F32:
+            return "float";
+        case TYPE_BOOL:
+            return "bool";
+        case TYPE_NAMED:
+            if (t->name && strcmp(t->name, "str") == 0) return "str";
+            return "int";
+        default:
+            return "int";
+    }
+}
+
 static int cg_gen_call(CodeGenerator *cg, Node *node) {
     if (node->data.call.callee->type == NODE_IDENTIFIER) {
         const char *name = node->data.call.callee->data.identifier.name;
 
         if (strcmp(name, "print") == 0 || strcmp(name, "println") == 0) {
-            if (node->data.call.args.count > 0) {
-                cg_gen_expr(cg, node->data.call.args.items[0]);
-                fprintf(cg->output, "    mov rdi, rax\n");
-            } else {
-                fprintf(cg->output, "    xor rdi, rdi\n");
+            for (int i = 0; i < node->data.call.args.count; i++) {
+                if (i > 0) {
+                    fprintf(cg->output, "    call _cobra_print_space\n");
+                }
+                cg_gen_expr(cg, node->data.call.args.items[i]);
+                Node *arg = node->data.call.args.items[i];
+                const char *tname = cg_type_name(arg->expr_type);
+                if (strcmp(tname, "str") == 0) {
+                    fprintf(cg->output, "    mov rdi, rax\n");
+                    fprintf(cg->output, "    call _cobra_print_str\n");
+                } else if (strcmp(tname, "bool") == 0) {
+                    fprintf(cg->output, "    mov rdi, rax\n");
+                    fprintf(cg->output, "    call _cobra_print_bool\n");
+                } else if (strcmp(tname, "float") == 0) {
+                    fprintf(cg->output, "    call _cobra_print_float\n");
+                } else {
+                    fprintf(cg->output, "    mov rdi, rax\n");
+                    fprintf(cg->output, "    call _cobra_print_int\n");
+                }
             }
-            if (strcmp(name, "println") == 0) {
-                fprintf(cg->output, "    call _cobra_println\n");
-            } else {
-                fprintf(cg->output, "    call _cobra_print\n");
-            }
+            fprintf(cg->output, "    call _cobra_print_nl\n");
             return 1;
         }
         if (strcmp(name, "print_int") == 0) {
@@ -398,20 +442,6 @@ static int cg_gen_identifier(CodeGenerator *cg, Node *node) {
     return 1;
 }
 
-static int cg_gen_let_decl(CodeGenerator *cg, Node *node) {
-    const char *name = node->data.let_decl.name;
-
-    if (node->data.let_decl.value) {
-        cg_gen_expr(cg, node->data.let_decl.value);
-    } else {
-        fprintf(cg->output, "    xor rax, rax\n");
-    }
-
-    int idx = cg_add_var(cg, name);
-    fprintf(cg->output, "    mov [rbp - %d], rax\n", cg->var_offsets[idx]);
-    return 1;
-}
-
 static int cg_gen_int_literal(CodeGenerator *cg, Node *node) {
     fprintf(cg->output, "    mov rax, %lld\n", node->data.int_value);
     return 1;
@@ -444,10 +474,12 @@ static int cg_gen_expr(CodeGenerator *cg, Node *node) {
             Node *target = node->data.assign.target;
             if (target && target->type == NODE_IDENTIFIER) {
                 int offset = cg_find_var(cg, target->data.identifier.name);
-                if (offset >= 0) {
-                    cg_gen_expr(cg, node->data.assign.value);
-                    fprintf(cg->output, "    mov [rbp - %d], rax\n", offset);
+                if (offset < 0) {
+                    int idx = cg_add_var(cg, target->data.identifier.name);
+                    offset = cg->var_offsets[idx];
                 }
+                cg_gen_expr(cg, node->data.assign.value);
+                fprintf(cg->output, "    mov [rbp - %d], rax\n", offset);
             }
             return 1;
         }
@@ -469,7 +501,6 @@ static int cg_gen_node(CodeGenerator *cg, Node *node) {
         case NODE_FOR: return cg_gen_for(cg, node);
         case NODE_BLOCK: return cg_gen_block(cg, node);
         case NODE_EXPR_STMT: return cg_gen_expr_stmt(cg, node);
-        case NODE_LET_DECL: return cg_gen_let_decl(cg, node);
         case NODE_BREAK:
         case NODE_CONTINUE:
             return 1;

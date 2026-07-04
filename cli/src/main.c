@@ -21,7 +21,6 @@ static int build_and_run(const char *cb_file, int run_it) {
             return 1;
         }
     }
-
     strncpy(base, cb_file, sizeof(base) - 1);
     base[sizeof(base) - 1] = 0;
     char *dot = strrchr(base, '.');
@@ -29,7 +28,17 @@ static int build_and_run(const char *cb_file, int run_it) {
     strncpy(basebuf, base, sizeof(basebuf) - 1);
     basebuf[sizeof(basebuf) - 1] = 0;
 
-    snprintf(cmd, sizeof(cmd), "mkdir -p build && cobrac %s -o build/%s.s 2>/dev/null", cb_file, basebuf);
+    char *slash = strrchr(basebuf, '/');
+    char outdir[1024];
+    if (slash) {
+        int dirlen = slash - basebuf;
+        snprintf(outdir, sizeof(outdir), "build/%.*s", dirlen, basebuf);
+    } else {
+        snprintf(outdir, sizeof(outdir), "build");
+    }
+
+    snprintf(cmd, sizeof(cmd), "mkdir -p %s && cobrac %s -o build/%s.s 2>/dev/null", outdir, cb_file, basebuf);
+
     if (system(cmd) != 0) { fprintf(stderr, "Compilation error\n"); return 1; }
 
     snprintf(cmd, sizeof(cmd), "clang -c build/%s.s -o build/%s.o 2>/dev/null", basebuf, basebuf);
@@ -67,9 +76,8 @@ static int repl(void) {
         if (fd < 0) { printf("Error\n"); continue; }
         FILE *f = fdopen(fd, "w");
         if (f) {
-            fprintf(f, "fn main() {\n");
-            fprintf(f, "    println(%s)\n", line);
-            fprintf(f, "}\n");
+            fprintf(f, "fn main():\n");
+            fprintf(f, "    print(%s)\n", line);
             fclose(f);
         }
         char cmd[4096];

@@ -2,6 +2,6 @@
 // The classic first program
 
 fn main():
-    println("Hello, World!")
-    println("Welcome to Cobra!")
-    print_int(42)
+    print("Hello, World!")
+    print("Welcome to Cobra!")
+    print(42)
