@@ -195,7 +195,12 @@ build_from_source() {
 
 # ─── Download ────────────────────────────────────────────────────────────────
 download_release() {
-    TARBALL="cobra-${OS}-${ARCH}.tar.gz"
+    case "$OS" in
+        darwin) OS_TARGET="macos" ;;
+        linux)  OS_TARGET="linux" ;;
+    esac
+    VERSION_NO_V="${VERSION#v}"
+    TARBALL="cobra-${VERSION_NO_V}-${OS_TARGET}-${ARCH}.tar.gz"
     URL="https://github.com/${REPO}/releases/download/${VERSION}/${TARBALL}"
     TMP_DIR="$(mktemp -d /tmp/cobra-install.XXXXXX)"
 
@@ -348,10 +353,10 @@ ${BANNER_COLOR}━━━━━━━━━━━━━━━━━━━━━�
     cobra run my-project
 
   ${BOLD}Documentation${RESET}
-    https://cobra-lang.org/docs
+    https://xznder1984.github.io/Cobra
 
   ${BOLD}Community${RESET}
-    https://cobra-lang.org/community
+    https://github.com/Xznder1984/Cobra/discussions
 
 ${BANNER_COLOR}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}
 

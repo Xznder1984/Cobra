@@ -4,7 +4,7 @@
 #include <unistd.h>
 #include <sys/stat.h>
 
-#define COBRA_CLI_VERSION "0.1.0"
+#define COBRA_CLI_VERSION "0.2.0"
 
 static int build_and_run(const char *cb_file, int run_it) {
     char cmd[4096];
